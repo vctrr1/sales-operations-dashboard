@@ -74,7 +74,11 @@ function SelectField<T extends string>({
   );
 }
 
-export default async function SalesPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function SalesPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   await requireRole([UserRole.SALES, UserRole.ADMIN]);
   const params = await searchParams;
   const month = parseMonth(params.month);
@@ -96,14 +100,15 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
           include: { items: true, assemblyOrder: true },
         })
       : null,
-    prisma.saleOrder.findMany({
-      select: { sellerName: true },
-      distinct: ["sellerName"],
-      orderBy: { sellerName: "asc" },
+    prisma.user.findMany({
+      where: { role: UserRole.SALES },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" },
     }),
   ]);
-
-  const itemRows = Array.from({ length: Math.max(5, editingOrder?.items.length ?? 0) });
+  const itemRows = Array.from({
+    length: Math.max(5, editingOrder?.items.length ?? 0),
+  });
 
   return (
     <div className="grid gap-6">
@@ -112,11 +117,18 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
           <div>
             <h1 className="text-xl font-semibold">Vendas</h1>
             <p className="text-sm text-muted-foreground">
-              {editingOrder ? `Editando ordem ${editingOrder.orderNumber}` : "Novo orçamento"}
+              {editingOrder
+                ? `Editando ordem ${editingOrder.orderNumber}`
+                : "Novo orçamento"}
             </p>
           </div>
           <form className="flex items-center gap-2">
-            <input type="month" name="month" defaultValue={month.key} className={inputClass} />
+            <input
+              type="month"
+              name="month"
+              defaultValue={month.key}
+              className={inputClass}
+            />
             <Button type="submit" variant="outline">
               Filtrar
             </Button>
@@ -132,29 +144,34 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
         </div>
 
         <form action={saveSaleOrder} className="grid gap-5">
+          {/*//serve para diferenciar criação de edição:Se id vem vazio, a action cria uma nova venda. Se id vem preenchido, a action atualiza a venda existente. */}
           <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
-          <datalist id="seller-list">
-            {sellers.map((seller) => (
-              <option key={seller.sellerName} value={seller.sellerName} />
-            ))}
-          </datalist>
-
           <div className="grid gap-3 md:grid-cols-4">
             <Field label="Vendedor">
-              <input
+              <select
                 name="sellerName"
-                list="seller-list"
                 required
-                defaultValue={editingOrder?.sellerName ?? ""}
                 className={inputClass}
-              />
+                defaultValue=""
+              >
+                <option value="" disabled hidden>
+                  Selecione um vendedor...
+                </option>
+                {sellers.map((seller) => (
+                  <option key={seller.id} value={seller.name}>
+                    {seller.name}
+                  </option>
+                ))}
+              </select>
             </Field>
             <Field label="Data do orçamento">
               <input
                 type="date"
                 name="quoteDate"
                 required
-                defaultValue={dateInputValue(editingOrder?.quoteDate ?? month.start)}
+                defaultValue={dateInputValue(
+                  editingOrder?.quoteDate ?? month.start,
+                )}
                 className={inputClass}
               />
             </Field>
@@ -286,7 +303,9 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
               <input
                 type="date"
                 name="scheduledDate"
-                defaultValue={dateInputValue(editingOrder?.assemblyOrder?.scheduledDate)}
+                defaultValue={dateInputValue(
+                  editingOrder?.assemblyOrder?.scheduledDate,
+                )}
                 className={inputClass}
               />
             </Field>
@@ -305,7 +324,10 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
               {itemRows.map((_, index) => {
                 const item = editingOrder?.items[index];
                 return (
-                  <div key={index} className="grid gap-2 md:grid-cols-[110px_1fr]">
+                  <div
+                    key={index}
+                    className="grid gap-2 md:grid-cols-[110px_1fr]"
+                  >
                     <input
                       name="itemQuantity"
                       type="number"
@@ -335,7 +357,9 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
           </Field>
 
           <div className="flex justify-end">
-            <Button type="submit">{editingOrder ? "Salvar alterações" : "Criar ordem"}</Button>
+            <Button type="submit">
+              {editingOrder ? "Salvar alterações" : "Criar ordem"}
+            </Button>
           </div>
         </form>
       </section>
@@ -343,7 +367,9 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
       <section className="rounded-lg border bg-background p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Ordens do mês</h2>
-          <span className="text-sm text-muted-foreground">{orders.length} registros</span>
+          <span className="text-sm text-muted-foreground">
+            {orders.length} registros
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[920px] text-left text-sm">
@@ -366,14 +392,20 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
                   <td className="py-3 pr-3 font-medium">{order.orderNumber}</td>
                   <td className="py-3 pr-3">{order.customerName}</td>
                   <td className="py-3 pr-3">{order.sellerName}</td>
-                  <td className="py-3 pr-3">{commercialStatusLabels[order.commercialStatus]}</td>
+                  <td className="py-3 pr-3">
+                    {commercialStatusLabels[order.commercialStatus]}
+                  </td>
                   <td className="py-3 pr-3">{money(order.quotedAmount)}</td>
                   <td className="py-3 pr-3">{money(order.closedAmount)}</td>
-                  <td className="py-3 pr-3">{logisticsTypeLabels[order.logisticsType]}</td>
+                  <td className="py-3 pr-3">
+                    {logisticsTypeLabels[order.logisticsType]}
+                  </td>
                   <td className="py-3 pr-3">{displayDate(order.quoteDate)}</td>
                   <td className="py-3 pr-3 text-right">
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/vendas?month=${month.key}&edit=${order.id}`}>
+                      <Link
+                        href={`/vendas?month=${month.key}&edit=${order.id}`}
+                      >
                         <Edit />
                         Editar
                       </Link>

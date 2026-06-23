@@ -31,7 +31,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
   const day = startOfUtcDay(params.date);
   const month = parseMonth(params.month ?? monthInputValue());
 
-  const [dailyOrders, goals, sellersFromOrders] = await Promise.all([
+  const [dailyOrders, goals, salesUsers] = await Promise.all([
     prisma.assemblyOrder.findMany({
       where: {
         OR: [
@@ -53,21 +53,22 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
       where: { month: month.start },
       orderBy: { sellerName: "asc" },
     }),
-    prisma.saleOrder.findMany({
-      select: { sellerName: true },
-      distinct: ["sellerName"],
-      orderBy: { sellerName: "asc" },
+    prisma.user.findMany({
+      where: { role: UserRole.SALES },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
   const goalBySeller = new Map(goals.map((goal) => [goal.sellerName, goal]));
-  const sellers = Array.from(
-    new Set([
-      GENERAL_GOAL_SELLER,
-      ...sellersFromOrders.map((seller) => seller.sellerName.toUpperCase()),
-      ...goals.map((goal) => goal.sellerName),
-    ]),
-  ).sort((a, b) => (a === GENERAL_GOAL_SELLER ? -1 : b === GENERAL_GOAL_SELLER ? 1 : a.localeCompare(b)));
+  const sellers = [
+    { id: GENERAL_GOAL_SELLER, label: "Geral", goalKey: GENERAL_GOAL_SELLER },
+    ...salesUsers.map((seller) => ({
+      id: seller.id,
+      label: seller.name,
+      goalKey: seller.name.toUpperCase(),
+    })),
+  ];
 
   return (
     <div className="grid gap-6">
@@ -135,17 +136,20 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
         </div>
         <div className="grid gap-3">
           {sellers.map((seller) => {
-            const goal = goalBySeller.get(seller);
+            const goal = goalBySeller.get(seller.goalKey);
             return (
               <form
-                key={seller}
+                key={seller.id}
                 action={saveMonthlyGoal}
                 className="grid gap-2 rounded-lg border p-3 md:grid-cols-[1fr_160px_160px_160px_auto]"
               >
                 <input type="hidden" name="month" value={month.key} />
+                <input type="hidden" name="sellerName" value={seller.goalKey} />
                 <label className="grid gap-1 text-sm font-medium">
                   <span>Vendedor</span>
-                  <input name="sellerName" defaultValue={seller} className={inputClass} />
+                  <div className="flex h-9 items-center rounded-md border border-input bg-muted/40 px-3 text-sm">
+                    {seller.label}
+                  </div>
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   <span>Meta base</span>
@@ -183,35 +187,6 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
               </form>
             );
           })}
-
-          <form
-            action={saveMonthlyGoal}
-            className="grid gap-2 rounded-lg border border-dashed p-3 md:grid-cols-[1fr_160px_160px_160px_auto]"
-          >
-            <input type="hidden" name="month" value={month.key} />
-            <label className="grid gap-1 text-sm font-medium">
-              <span>Novo vendedor</span>
-              <input name="sellerName" className={inputClass} />
-            </label>
-            <label className="grid gap-1 text-sm font-medium">
-              <span>Meta base</span>
-              <input name="baseAmount" inputMode="decimal" defaultValue="0" className={inputClass} />
-            </label>
-            <label className="grid gap-1 text-sm font-medium">
-              <span>Meta média</span>
-              <input name="midAmount" inputMode="decimal" defaultValue="0" className={inputClass} />
-            </label>
-            <label className="grid gap-1 text-sm font-medium">
-              <span>Super meta</span>
-              <input name="superAmount" inputMode="decimal" defaultValue="0" className={inputClass} />
-            </label>
-            <div className="flex items-end">
-              <Button type="submit" variant="outline" className="w-full">
-                <Save />
-                Adicionar
-              </Button>
-            </div>
-          </form>
         </div>
       </section>
     </div>
