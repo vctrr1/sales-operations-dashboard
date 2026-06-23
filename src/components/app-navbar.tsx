@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ClipboardList, Goal, LayoutDashboard, Shield, Truck } from "lucide-react";
+import {
+  ClipboardList,
+  Goal,
+  LayoutDashboard,
+  Shield,
+  Truck,
+} from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
@@ -10,6 +16,7 @@ import {
   canAccessOperations,
   canAccessSales,
 } from "@/lib/permissions";
+import { ThemeToggle } from "./theme-toggle";
 
 const navItemClass =
   "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground";
@@ -19,7 +26,11 @@ export function AppNavbar({ user }: { user: AppUser }) {
     <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" className="px-0 text-base font-semibold">
+          <Button
+            asChild
+            variant="ghost"
+            className="px-0 text-base font-semibold"
+          >
             <Link href="/">Chairs Store</Link>
           </Button>
           <span className="rounded-md border px-2 py-1 text-xs text-muted-foreground">
@@ -63,6 +74,7 @@ export function AppNavbar({ user }: { user: AppUser }) {
             </>
           ) : null}
           <LogoutButton />
+          <ThemeToggle />
         </nav>
       </div>
     </header>
@@ -83,8 +95,8 @@ export function PendingAccess({ user }: { user: AppUser }) {
           <LogoutButton />
         </div>
         <p className="text-sm leading-6 text-muted-foreground">
-          Sua conta já foi criada. Um administrador precisa liberar seu perfil para
-          acessar o sistema.
+          Sua conta já foi criada. Um administrador precisa liberar seu perfil
+          para acessar o sistema.
         </p>
       </section>
     </main>

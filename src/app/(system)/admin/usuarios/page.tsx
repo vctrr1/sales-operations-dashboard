@@ -1,13 +1,24 @@
 import { Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { roleLabels, roleOptions } from "@/lib/domain";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { updateUserRole } from "../../actions";
-
-const selectClass =
-  "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
 
 export default async function UsersPage() {
   await requireRole([UserRole.ADMIN]);
@@ -25,13 +36,12 @@ export default async function UsersPage() {
 
   return (
     <div className="grid gap-5">
-      <section>
-        <h1 className="text-xl font-semibold">Usuários</h1>
-        <p className="text-sm text-muted-foreground">Perfis de acesso</p>
-      </section>
-
-      <section className="rounded-lg border bg-background p-4 shadow-sm">
-        <div className="overflow-x-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Usuários</CardTitle>
+          <CardDescription>Perfis de acesso</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b text-xs uppercase text-muted-foreground">
               <tr>
@@ -50,13 +60,18 @@ export default async function UsersPage() {
                   <td className="py-3 pr-3">
                     <form id={`role-${user.id}`} action={updateUserRole}>
                       <input type="hidden" name="userId" value={user.id} />
-                      <select name="role" defaultValue={user.role} className={selectClass}>
+                      <Select name="role" defaultValue={user.role}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
                         {roleOptions.map((role) => (
-                          <option key={role} value={role}>
+                          <SelectItem key={role} value={role}>
                             {roleLabels[role]}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
+                        </SelectContent>
+                      </Select>
                     </form>
                   </td>
                   <td className="py-3 pr-3">
@@ -72,8 +87,8 @@ export default async function UsersPage() {
               ))}
             </tbody>
           </table>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   );
 }

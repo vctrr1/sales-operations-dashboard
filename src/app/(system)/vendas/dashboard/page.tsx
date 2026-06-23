@@ -1,4 +1,13 @@
 import { UserRole } from "@/generated/prisma/enums";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   discountedPaymentMethods,
   GENERAL_GOAL_SELLER,
@@ -7,9 +16,6 @@ import {
 import { money, parseMonth, percent, toDecimalNumber } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
-
-const inputClass =
-  "h-9 rounded-md border border-input bg-background px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
 
 type SearchParams = Promise<{ month?: string }>;
 
@@ -71,10 +77,12 @@ function buildMetric(
 
 function MetricCard({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-lg border bg-background p-4 shadow-sm">
-      <p className="text-sm text-muted-foreground">{title}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
-    </div>
+    <Card size="sm">
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="mt-2 text-2xl font-semibold">{value}</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -145,10 +153,10 @@ export default async function SalesDashboardPage({
           <p className="text-sm text-muted-foreground">Comercial mensal</p>
         </div>
         <form className="flex items-center gap-2">
-          <input type="month" name="month" defaultValue={month.key} className={inputClass} />
-          <button className="h-9 rounded-md border px-3 text-sm font-medium" type="submit">
+          <Input type="month" name="month" defaultValue={month.key} className="w-[180px]" />
+          <Button variant="outline" type="submit">
             Filtrar
-          </button>
+          </Button>
         </form>
       </section>
 
@@ -160,26 +168,29 @@ export default async function SalesDashboardPage({
         <MetricCard title="Ticket médio" value={money(generalMetric.ticket)} />
       </section>
 
-      <section className="rounded-lg border bg-background p-4 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Meta geral</h2>
-          <span className="text-sm text-muted-foreground">
+      <Card>
+        <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
+          <CardTitle>Meta geral</CardTitle>
+          <CardDescription>
             Conversão valor {percent(generalMetric.conversionValue)}
-          </span>
-        </div>
-        <GoalBar metric={generalMetric} />
-      </section>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <GoalBar metric={generalMetric} />
+        </CardContent>
+      </Card>
 
       <section className="grid gap-4">
         {sellerMetrics.map((metric) => (
-          <article key={metric.sellerName} className="rounded-lg border bg-background p-4 shadow-sm">
-            <div className="mb-4 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-              <h2 className="text-lg font-semibold">{metric.sellerName}</h2>
-              <span className="text-sm text-muted-foreground">
+          <Card key={metric.sellerName}>
+            <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
+              <CardTitle>{metric.sellerName}</CardTitle>
+              <CardDescription>
                 Desconto médio {percent(metric.discountAverage)}
-              </span>
-            </div>
-            <div className="mb-4 grid gap-3 md:grid-cols-6">
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+            <div className="grid gap-3 md:grid-cols-6">
               <MetricCard title="Orçado" value={money(metric.totalQuoted)} />
               <MetricCard title="Fechado" value={money(metric.totalClosed)} />
               <MetricCard title="Conversão nº" value={percent(metric.conversionCount)} />
@@ -188,21 +199,26 @@ export default async function SalesDashboardPage({
               <MetricCard title="Ticket" value={money(metric.ticket)} />
             </div>
             <GoalBar metric={metric} />
-          </article>
+            </CardContent>
+          </Card>
         ))}
         {sellerMetrics.length === 0 ? (
-          <div className="rounded-lg border bg-background p-6 text-sm text-muted-foreground">
-            Nenhum registro comercial no mês selecionado.
-          </div>
+          <Card>
+            <CardContent className="text-sm text-muted-foreground">
+              Nenhum registro comercial no mês selecionado.
+            </CardContent>
+          </Card>
         ) : null}
       </section>
 
-      <section className="rounded-lg border bg-background p-4 text-sm text-muted-foreground shadow-sm">
-        Métodos considerados para desconto médio:{" "}
-        {Array.from(discountedPaymentMethods)
-          .map((method) => paymentMethodLabels[method])
-          .join(", ")}
-      </section>
+      <Card>
+        <CardContent className="text-sm text-muted-foreground">
+          Métodos considerados para desconto médio:{" "}
+          {Array.from(discountedPaymentMethods)
+            .map((method) => paymentMethodLabels[method])
+            .join(", ")}
+        </CardContent>
+      </Card>
     </div>
   );
 }

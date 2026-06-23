@@ -2,6 +2,21 @@ import { CalendarDays, MapPin, Save } from "lucide-react";
 import { AssemblyStatus, UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   assemblyStatusLabels,
   assemblyStatusOptions,
   logisticsTypeLabels,
@@ -14,10 +29,8 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { updateAssemblyOrder } from "../actions";
 
-const inputClass =
-  "h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
 const textareaClass =
-  "min-h-16 w-full rounded-md border border-input bg-background px-2 py-2 text-xs outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
+  "min-h-16 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30";
 
 const columns = [
   AssemblyStatus.TO_SCHEDULE,
@@ -55,33 +68,34 @@ export default async function AssemblyPage() {
         {columns.map((status) => {
           const cards = assemblyOrders.filter((order) => order.status === status);
           return (
-            <div key={status} className="rounded-lg border bg-background p-3 shadow-sm">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">{assemblyStatusLabels[status]}</h2>
+            <Card key={status} size="sm">
+              <CardHeader className="grid-cols-[1fr_auto] items-center">
+                <CardTitle>{assemblyStatusLabels[status]}</CardTitle>
                 <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
                   {cards.length}
                 </span>
-              </div>
+              </CardHeader>
 
-              <div className="grid gap-3">
+              <CardContent className="grid gap-3">
                 {cards.map((assembly) => (
-                  <article key={assembly.id} className="rounded-lg border bg-muted/30 p-3">
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-semibold">
+                  <Card key={assembly.id} size="sm" className="bg-muted/30">
+                    <CardHeader className="grid-cols-[1fr_auto] gap-2">
+                      <div className="min-w-0">
+                        <CardTitle className="text-sm">
                           #{assembly.saleOrder.orderNumber} {assembly.saleOrder.customerName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
+                        </CardTitle>
+                        <CardDescription className="text-xs">
                           {assembly.saleOrder.sellerName} ·{" "}
                           {logisticsTypeLabels[assembly.saleOrder.logisticsType]}
-                        </p>
+                        </CardDescription>
                       </div>
                       <span className="rounded-md border bg-background px-2 py-1 text-xs">
                         {priorityLabels[assembly.priority]}
                       </span>
-                    </div>
+                    </CardHeader>
 
-                    <div className="mb-3 grid gap-2 text-xs text-muted-foreground">
+                    <CardContent className="grid gap-3">
+                    <div className="grid gap-2 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <CalendarDays className="size-3.5" />
                         {displayDate(assembly.scheduledDate)}
@@ -95,7 +109,7 @@ export default async function AssemblyPage() {
                       <p>{productCategoryLabels[assembly.saleOrder.productCategory]}</p>
                     </div>
 
-                    <ul className="mb-3 grid gap-1 text-xs">
+                    <ul className="grid gap-1 text-xs">
                       {assembly.saleOrder.items.map((item) => (
                         <li key={item.id}>
                           {item.quantity}x {item.description}
@@ -104,32 +118,42 @@ export default async function AssemblyPage() {
                     </ul>
 
                     {assembly.saleOrder.notes ? (
-                      <p className="mb-3 rounded-md bg-background p-2 text-xs text-muted-foreground">
+                      <p className="rounded-md bg-background p-2 text-xs text-muted-foreground">
                         {assembly.saleOrder.notes}
                       </p>
                     ) : null}
 
                     <form action={updateAssemblyOrder} className="grid gap-2">
                       <input type="hidden" name="id" value={assembly.id} />
-                      <select name="status" defaultValue={assembly.status} className={inputClass}>
+                      <Select name="status" defaultValue={assembly.status}>
+                        <SelectTrigger className="w-full text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
                         {assemblyStatusOptions.map((option) => (
-                          <option key={option} value={option}>
+                          <SelectItem key={option} value={option}>
                             {assemblyStatusLabels[option]}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                      <select name="priority" defaultValue={assembly.priority} className={inputClass}>
+                        </SelectContent>
+                      </Select>
+                      <Select name="priority" defaultValue={assembly.priority}>
+                        <SelectTrigger className="w-full text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
                         {priorityOptions.map((option) => (
-                          <option key={option} value={option}>
+                          <SelectItem key={option} value={option}>
                             {priorityLabels[option]}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                      <input
+                        </SelectContent>
+                      </Select>
+                      <Input
                         type="date"
                         name="scheduledDate"
                         defaultValue={dateInputValue(assembly.scheduledDate)}
-                        className={inputClass}
+                        className="text-xs"
                       />
                       <textarea
                         name="scheduleNotes"
@@ -142,7 +166,8 @@ export default async function AssemblyPage() {
                         Salvar
                       </Button>
                     </form>
-                  </article>
+                    </CardContent>
+                  </Card>
                 ))}
 
                 {cards.length === 0 ? (
@@ -150,8 +175,8 @@ export default async function AssemblyPage() {
                     Sem ordens
                   </div>
                 ) : null}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           );
         })}
       </section>
