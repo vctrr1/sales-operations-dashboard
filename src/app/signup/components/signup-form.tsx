@@ -48,6 +48,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       {
         onSuccess: (ctx) => {
           console.log("Sucesso", ctx);
+          router.replace("/app");
         },
         onError: (ctx) => {
           console.log("Error", ctx);
@@ -117,6 +118,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 <FieldDescription className="px-6 text-center">
                   Já tem uma conta?{" "}
                   <button
+                    type="button"
                     onClick={() => router.replace("/login")}
                     className="text-blue-600 hover:text-blue-800"
                   >

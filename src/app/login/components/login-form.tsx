@@ -40,6 +40,7 @@ export function LoginForm({
       {
         onSuccess: (ctx) => {
           console.log("Sucesso", ctx);
+          router.replace("/app");
         },
         onError: (ctx) => {
           console.log("Error", ctx);
@@ -83,6 +84,7 @@ export function LoginForm({
                 <FieldDescription className="px-6 text-center">
                   Não tem uma conta?{" "}
                   <button
+                    type="button"
                     onClick={() => router.replace("/signup")}
                     className="text-blue-600 hover:text-blue-800"
                   >
