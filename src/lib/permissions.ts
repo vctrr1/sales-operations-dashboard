@@ -1,6 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { UserRole, type UserRole as UserRoleType } from "@/generated/prisma/enums";
+import {
+  UserRole,
+  type UserRole as UserRoleType,
+} from "@/generated/prisma/enums";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -44,7 +47,7 @@ export async function requireUser() {
 
 export async function requireRole(roles: UserRoleType[]) {
   const user = await requireUser();
-  if (!roles.includes(user.role)) redirect("/app");
+  if (!roles.includes(user.role)) redirect("/");
   return user;
 }
 

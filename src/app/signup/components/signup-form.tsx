@@ -48,7 +48,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       {
         onSuccess: (ctx) => {
           console.log("Sucesso", ctx);
-          router.replace("/app");
+          router.replace("/");
         },
         onError: (ctx) => {
           console.log("Error", ctx);

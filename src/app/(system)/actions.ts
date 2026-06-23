@@ -148,11 +148,11 @@ export async function saveSaleOrder(formData: FormData) {
     }
   });
 
-  revalidatePath("/app/vendas");
-  revalidatePath("/app/vendas/dashboard");
-  revalidatePath("/app/montagem");
-  revalidatePath("/app/financeiro");
-  redirect("/app/vendas");
+  revalidatePath("/vendas");
+  revalidatePath("/vendas/dashboard");
+  revalidatePath("/montagem");
+  revalidatePath("/financeiro");
+  redirect("/vendas");
 }
 
 export async function updateAssemblyOrder(formData: FormData) {
@@ -170,8 +170,8 @@ export async function updateAssemblyOrder(formData: FormData) {
     },
   });
 
-  revalidatePath("/app/montagem");
-  revalidatePath("/app/financeiro");
+  revalidatePath("/montagem");
+  revalidatePath("/financeiro");
 }
 
 export async function saveMonthlyGoal(formData: FormData) {
@@ -202,8 +202,8 @@ export async function saveMonthlyGoal(formData: FormData) {
     },
   });
 
-  revalidatePath("/app/financeiro");
-  revalidatePath("/app/vendas/dashboard");
+  revalidatePath("/financeiro");
+  revalidatePath("/vendas/dashboard");
 }
 
 export async function updateUserRole(formData: FormData) {
@@ -217,5 +217,5 @@ export async function updateUserRole(formData: FormData) {
     data: { role },
   });
 
-  revalidatePath("/app/admin/usuarios");
+  revalidatePath("/admin/usuarios");
 }

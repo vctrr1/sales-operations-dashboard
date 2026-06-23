@@ -40,7 +40,7 @@ export function LoginForm({
       {
         onSuccess: (ctx) => {
           console.log("Sucesso", ctx);
-          router.replace("/app");
+          router.replace("/");
         },
         onError: (ctx) => {
           console.log("Error", ctx);

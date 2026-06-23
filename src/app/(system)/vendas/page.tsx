@@ -122,7 +122,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
             </Button>
             {editingOrder ? (
               <Button asChild variant="outline">
-                <Link href={`/app/vendas?month=${month.key}`}>
+                <Link href={`/vendas?month=${month.key}`}>
                   <Plus />
                   Novo
                 </Link>
@@ -373,7 +373,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Search
                   <td className="py-3 pr-3">{displayDate(order.quoteDate)}</td>
                   <td className="py-3 pr-3 text-right">
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/app/vendas?month=${month.key}&edit=${order.id}`}>
+                      <Link href={`/vendas?month=${month.key}&edit=${order.id}`}>
                         <Edit />
                         Editar
                       </Link>
