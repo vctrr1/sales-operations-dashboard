@@ -12,16 +12,80 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  PENDING
+  OPERATION
+  SALES
+  ADMIN
+}
+
+enum CommercialStatus {
+  QUOTE
+  CLOSED
+}
+
+enum PaymentMethod {
+  CARD
+  PAYMENT_LINK
+  BOLETO
+  TRANSFER
+  PIX
+  CASH
+}
+
+enum ProductCategory {
+  GEBB_ATC
+  GEBB_VERSA
+  MARCENARIA
+  CADEIRAS
+  REFORMAS
+  ACO
+}
+
+enum LogisticsType {
+  DELIVERY
+  PICKUP
+  SHOWROOM
+  VISIT_SCHEDULE
+}
+
+enum AssemblyStatus {
+  TO_SCHEDULE
+  NO_ASSEMBLY
+  ASSEMBLED
+  FINISHED
+  DELIVERED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum CustomerOrigin {
+  STORE_VISIT
+  ONLINE
+  STORE_AND_ONLINE
+}
+
+enum BudgetOrigin {
+  SAME_MONTH
+  PREVIOUS_MONTH
+}
+
 model User {
   id            String    @id
   name          String
   email         String
   emailVerified Boolean   @default(false)
   image         String?
+  role          UserRole  @default(PENDING)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  saleOrders    SaleOrder[]
 
   @@unique([email])
   @@map("user")
@@ -73,4 +137,76 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model SaleOrder {
+  id                 String             @id @default(cuid())
+  orderNumber        Int                @unique @default(autoincrement())
+  sellerName         String
+  commercialStatus   CommercialStatus   @default(QUOTE)
+  quoteDate          DateTime
+  closedAt           DateTime?
+  quotedAmount       Decimal            @db.Decimal(12, 2)
+  closedAmount       Decimal?           @db.Decimal(12, 2)
+  discountPercent    Decimal?           @db.Decimal(5, 2)
+  paymentMethod      PaymentMethod?
+  productCategory    ProductCategory
+  logisticsType      LogisticsType
+  deliveryAddress    String?
+  customerName       String
+  invoiceName        String?
+  responsibleContact String?
+  customerOrigin     CustomerOrigin
+  budgetOrigin       BudgetOrigin
+  notes              String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  createdById        String?
+  createdBy          User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  items              SaleOrderItem[]
+  assemblyOrder      AssemblyOrder?
+
+  @@index([commercialStatus, quoteDate])
+  @@index([sellerName, quoteDate])
+  @@index([closedAt])
+}
+
+model SaleOrderItem {
+  id          String    @id @default(cuid())
+  quantity    Int
+  description String
+  saleOrderId String
+  saleOrder   SaleOrder @relation(fields: [saleOrderId], references: [id], onDelete: Cascade)
+
+  @@index([saleOrderId])
+}
+
+model AssemblyOrder {
+  id            String         @id @default(cuid())
+  saleOrderId   String         @unique
+  status        AssemblyStatus @default(TO_SCHEDULE)
+  priority      Priority       @default(MEDIUM)
+  scheduledDate DateTime?
+  scheduleNotes String?
+  orderIndex    Int            @default(0)
+  requestedAt   DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  saleOrder     SaleOrder      @relation(fields: [saleOrderId], references: [id], onDelete: Cascade)
+
+  @@index([status, orderIndex])
+  @@index([scheduledDate])
+}
+
+model MonthlyGoal {
+  id          String   @id @default(cuid())
+  month       DateTime
+  sellerName  String
+  baseAmount  Decimal  @db.Decimal(12, 2)
+  midAmount   Decimal  @db.Decimal(12, 2)
+  superAmount Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([month, sellerName])
+  @@index([month])
 }
