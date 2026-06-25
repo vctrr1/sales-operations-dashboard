@@ -16,6 +16,7 @@ import {
 import { money, parseMonth, percent, toDecimalNumber } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
+import { Funnel } from "lucide-react";
 
 type SearchParams = Promise<{ month?: string }>;
 
@@ -44,19 +45,32 @@ function buildMetric(
   range: { start: Date; end: Date },
   goal?: { baseAmount: unknown; midAmount: unknown; superAmount: unknown },
 ) {
-  const quoted = orders.filter((order) => inRange(order.quoteDate, range.start, range.end));
+  const quoted = orders.filter((order) =>
+    inRange(order.quoteDate, range.start, range.end),
+  );
   const closed = orders.filter(
-    (order) => order.commercialStatus === "CLOSED" && inRange(order.closedAt, range.start, range.end),
+    (order) =>
+      order.commercialStatus === "CLOSED" &&
+      inRange(order.closedAt, range.start, range.end),
   );
   const discounted = closed.filter(
-    (order) => order.paymentMethod && discountedPaymentMethods.has(order.paymentMethod),
+    (order) =>
+      order.paymentMethod && discountedPaymentMethods.has(order.paymentMethod),
   );
-  const totalQuoted = quoted.reduce((total, order) => total + toDecimalNumber(order.quotedAmount), 0);
-  const totalClosed = closed.reduce((total, order) => total + toDecimalNumber(order.closedAmount), 0);
+  const totalQuoted = quoted.reduce(
+    (total, order) => total + toDecimalNumber(order.quotedAmount),
+    0,
+  );
+  const totalClosed = closed.reduce(
+    (total, order) => total + toDecimalNumber(order.closedAmount),
+    0,
+  );
   const discountAverage =
     discounted.length > 0
-      ? discounted.reduce((total, order) => total + toDecimalNumber(order.discountPercent), 0) /
-        discounted.length
+      ? discounted.reduce(
+          (total, order) => total + toDecimalNumber(order.discountPercent),
+          0,
+        ) / discounted.length
       : 0;
 
   return {
@@ -88,7 +102,9 @@ function MetricCard({ title, value }: { title: string; value: string }) {
 
 function GoalBar({ metric }: { metric: Metric }) {
   const target = metric.goalSuper || metric.goalMid || metric.goalBase;
-  const progress = target ? Math.min((metric.totalClosed / target) * 100, 100) : 0;
+  const progress = target
+    ? Math.min((metric.totalClosed / target) * 100, 100)
+    : 0;
 
   return (
     <div className="grid gap-2">
@@ -129,7 +145,9 @@ export default async function SalesDashboardPage({
   ]);
 
   const goalsBySeller = new Map(goals.map((goal) => [goal.sellerName, goal]));
-  const sellers = Array.from(new Set(orders.map((order) => order.sellerName))).sort();
+  const sellers = Array.from(
+    new Set(orders.map((order) => order.sellerName)),
+  ).sort();
   const generalMetric = buildMetric(
     "Geral",
     orders,
@@ -153,17 +171,32 @@ export default async function SalesDashboardPage({
           <p className="text-sm text-muted-foreground">Comercial mensal</p>
         </div>
         <form className="flex items-center gap-2">
-          <Input type="month" name="month" defaultValue={month.key} className="w-[180px]" />
-          <Button variant="outline" type="submit">
+          <Input
+            type="month"
+            name="month"
+            defaultValue={month.key}
+            className="w-[180px]"
+          />
+          <Button type="submit">
+            <Funnel />
             Filtrar
           </Button>
         </form>
       </section>
 
       <section className="grid gap-3 md:grid-cols-5">
-        <MetricCard title="Total orçado" value={money(generalMetric.totalQuoted)} />
-        <MetricCard title="Total fechado" value={money(generalMetric.totalClosed)} />
-        <MetricCard title="Conversão nº" value={percent(generalMetric.conversionCount)} />
+        <MetricCard
+          title="Total orçado"
+          value={money(generalMetric.totalQuoted)}
+        />
+        <MetricCard
+          title="Total fechado"
+          value={money(generalMetric.totalClosed)}
+        />
+        <MetricCard
+          title="Conversão nº"
+          value={percent(generalMetric.conversionCount)}
+        />
         <MetricCard title="Vendas" value={String(generalMetric.saleCount)} />
         <MetricCard title="Ticket médio" value={money(generalMetric.ticket)} />
       </section>
@@ -190,15 +223,21 @@ export default async function SalesDashboardPage({
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
-            <div className="grid gap-3 md:grid-cols-6">
-              <MetricCard title="Orçado" value={money(metric.totalQuoted)} />
-              <MetricCard title="Fechado" value={money(metric.totalClosed)} />
-              <MetricCard title="Conversão nº" value={percent(metric.conversionCount)} />
-              <MetricCard title="Conversão R$" value={percent(metric.conversionValue)} />
-              <MetricCard title="Vendas" value={String(metric.saleCount)} />
-              <MetricCard title="Ticket" value={money(metric.ticket)} />
-            </div>
-            <GoalBar metric={metric} />
+              <div className="grid gap-3 md:grid-cols-6">
+                <MetricCard title="Orçado" value={money(metric.totalQuoted)} />
+                <MetricCard title="Fechado" value={money(metric.totalClosed)} />
+                <MetricCard
+                  title="Conversão nº"
+                  value={percent(metric.conversionCount)}
+                />
+                <MetricCard
+                  title="Conversão R$"
+                  value={percent(metric.conversionValue)}
+                />
+                <MetricCard title="Vendas" value={String(metric.saleCount)} />
+                <MetricCard title="Ticket" value={money(metric.ticket)} />
+              </div>
+              <GoalBar metric={metric} />
             </CardContent>
           </Card>
         ))}
