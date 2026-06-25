@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Edit, Plus } from "lucide-react";
+import { Ban, Edit, Plus } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +43,49 @@ import SelectField from "./components/select-field";
 
 const textareaClass =
   "min-h-20 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30";
+
+const sectionCardClass = "rounded-lg";
+
+function RadioGroup<T extends string>({
+  name,
+  label,
+  options,
+  labels,
+  defaultValue,
+  columns = "sm:grid-cols-2",
+}: {
+  name: string;
+  label: string;
+  options: T[];
+  labels: Record<T, string>;
+  defaultValue?: T;
+  columns?: string;
+}) {
+  const checkedValue = defaultValue ?? options[0];
+
+  return (
+    <fieldset className="grid gap-2">
+      <legend className="text-sm font-medium leading-snug">{label}</legend>
+      <div className={`grid gap-2 ${columns}`}>
+        {options.map((option) => (
+          <label
+            key={option}
+            className="flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border border-input px-2.5 py-1.5 text-sm transition-colors has-checked:border-primary/50 has-checked:bg-primary/5 hover:bg-muted/50 dark:has-checked:bg-primary/10"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={option}
+              defaultChecked={option === checkedValue}
+              className="size-4 accent-primary"
+            />
+            <span className="leading-snug">{labels[option]}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
 
 type SearchParams = Promise<{ month?: string; edit?: string }>;
 
@@ -90,41 +133,45 @@ export default async function SalesPage({
 
   return (
     <div className="grid gap-6">
-      <Card>
-        <CardHeader className="gap-3 md:grid-cols-[1fr_auto] md:items-center">
+      <section className="grid gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <CardTitle>Vendas</CardTitle>
-            <CardDescription>
+            <h1 className="text-lg font-semibold">Vendas</h1>
+            <p className="text-sm text-muted-foreground">
               {editingOrder
                 ? `Editando ordem ${editingOrder.orderNumber}`
                 : "Novo orçamento"}
-            </CardDescription>
+            </p>
           </div>
-          <form className="flex items-center gap-2">
-            <Input
-              type="month"
-              name="month"
-              defaultValue={month.key}
-              className="w-[180px]"
-            />
-            <Button type="submit" variant="outline">
-              Filtrar
-            </Button>
+          <div className="flex flex-wrap items-center gap-2">
             {editingOrder ? (
-              <Button asChild variant="outline">
+              <Button asChild variant="destructive">
                 <Link href={`/vendas?month=${month.key}`}>
-                  <Plus />
-                  Novo
+                  <Ban />
+                  Cancelar
                 </Link>
               </Button>
             ) : null}
-          </form>
-        </CardHeader>
+            <Button type="submit" form="sale-order-form">
+              <Plus />
+              {editingOrder ? "Salvar Alterações" : "Criar Ordem"}
+            </Button>
+          </div>
+        </div>
 
-        <CardContent>
-          <form key={formKey} action={saveSaleOrder} className="grid gap-5">
-            <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
-            <FieldGroup className="grid gap-3 md:grid-cols-4">
+        <form
+          id="sale-order-form"
+          key={formKey}
+          action={saveSaleOrder}
+          className="grid gap-4 lg:grid-cols-12"
+        >
+          <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
+
+          <Card className={`${sectionCardClass} lg:col-span-3`}>
+            <CardHeader>
+              <CardTitle>Informações gerais</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
               <FormField label="Vendedor">
                 <Select
                   name="sellerName"
@@ -156,12 +203,13 @@ export default async function SalesPage({
                   defaultValue={dateInputValue(editingOrder?.quoteDate)}
                 />
               </FormField>
-              <SelectField
+              <RadioGroup
                 name="commercialStatus"
                 label="Status"
                 options={commercialStatusOptions}
                 labels={commercialStatusLabels}
                 defaultValue={editingOrder?.commercialStatus}
+                columns="grid-cols-2"
               />
               <FormField label="Data do fechamento">
                 <Input
@@ -170,9 +218,14 @@ export default async function SalesPage({
                   defaultValue={dateInputValue(editingOrder?.closedAt)}
                 />
               </FormField>
-            </FieldGroup>
+            </CardContent>
+          </Card>
 
-            <FieldGroup className="grid gap-3 md:grid-cols-4">
+          <Card className={`${sectionCardClass} lg:col-span-3`}>
+            <CardHeader>
+              <CardTitle>Valores</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
               <FormField label="Valor orçado">
                 <Input
                   name="quotedAmount"
@@ -195,67 +248,150 @@ export default async function SalesPage({
                   defaultValue={editingOrder?.discountPercent?.toString() ?? ""}
                 />
               </FormField>
-              <SelectField
+            </CardContent>
+          </Card>
+
+          <Card className={`${sectionCardClass} lg:col-span-3`}>
+            <CardHeader>
+              <CardTitle>Forma de pagamento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup
                 name="paymentMethod"
                 label="Forma de pagamento"
                 options={paymentMethodOptions}
                 labels={paymentMethodLabels}
                 defaultValue={editingOrder?.paymentMethod ?? undefined}
               />
-            </FieldGroup>
+            </CardContent>
+          </Card>
 
-            <FieldGroup className="grid gap-3 md:grid-cols-4">
+          <Card className={`${sectionCardClass} lg:col-span-3`}>
+            <CardHeader>
+              <CardTitle>Produto e logística</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
               <SelectField
                 name="productCategory"
-                label="Categoria"
+                label="Categoria do produto"
                 options={productCategoryOptions}
                 labels={productCategoryLabels}
                 defaultValue={editingOrder?.productCategory}
               />
-              <SelectField
+              <RadioGroup
                 name="logisticsType"
                 label="Logística"
                 options={logisticsTypeOptions}
                 labels={logisticsTypeLabels}
                 defaultValue={editingOrder?.logisticsType}
+                columns="grid-cols-1"
               />
-              <SelectField
+              <FormField label="Endereço de entrega">
+                <textarea
+                  name="deliveryAddress"
+                  defaultValue={editingOrder?.deliveryAddress ?? ""}
+                  className={textareaClass}
+                />
+              </FormField>
+            </CardContent>
+          </Card>
+
+          <Card className={`${sectionCardClass} lg:col-span-8`}>
+            <CardHeader>
+              <CardTitle>Itens do pedido</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <FieldGroup className="grid gap-3 md:grid-cols-3">
+                <FormField label="Cliente">
+                  <Input
+                    name="customerName"
+                    required
+                    defaultValue={editingOrder?.customerName ?? ""}
+                  />
+                </FormField>
+                <FormField label="Nome da nota" className="md:col-span-2">
+                  <Input
+                    name="invoiceName"
+                    defaultValue={editingOrder?.invoiceName ?? ""}
+                  />
+                </FormField>
+                <FormField label="Contato responsável">
+                  <Input
+                    name="responsibleContact"
+                    defaultValue={editingOrder?.responsibleContact ?? ""}
+                  />
+                </FormField>
+              </FieldGroup>
+
+              <FieldGroup className="gap-2">
+                <FieldLabel>Itens</FieldLabel>
+                <div className="grid gap-2">
+                  {itemRows.map((_, index) => {
+                    const item = editingOrder?.items[index];
+                    return (
+                      <div
+                        key={index}
+                        className="grid gap-2 md:grid-cols-[110px_1fr]"
+                      >
+                        <Input
+                          name="itemQuantity"
+                          type="number"
+                          min="1"
+                          defaultValue={
+                            item?.quantity ?? (index === 0 ? 1 : "")
+                          }
+                          aria-label={`Quantidade ${index + 1}`}
+                        />
+                        <Input
+                          name="itemDescription"
+                          defaultValue={item?.description ?? ""}
+                          aria-label={`Descrição ${index + 1}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+
+          <Card className={`${sectionCardClass} lg:col-span-4`}>
+            <CardHeader>
+              <CardTitle>Outras informações</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <RadioGroup
                 name="customerOrigin"
                 label="Origem do cliente"
                 options={customerOriginOptions}
                 labels={customerOriginLabels}
                 defaultValue={editingOrder?.customerOrigin}
+                columns="grid-cols-1"
               />
-              <SelectField
+              <RadioGroup
                 name="budgetOrigin"
                 label="Origem do orçamento"
                 options={budgetOriginOptions}
                 labels={budgetOriginLabels}
                 defaultValue={editingOrder?.budgetOrigin}
+                columns="grid-cols-1"
               />
-            </FieldGroup>
+              <FormField label="Observações">
+                <textarea
+                  name="notes"
+                  defaultValue={editingOrder?.notes ?? ""}
+                  className={textareaClass}
+                />
+              </FormField>
+            </CardContent>
+          </Card>
 
-            <FieldGroup className="grid gap-3 md:grid-cols-4">
-              <FormField label="Cliente">
-                <Input
-                  name="customerName"
-                  required
-                  defaultValue={editingOrder?.customerName ?? ""}
-                />
-              </FormField>
-              <FormField label="Nome da nota">
-                <Input
-                  name="invoiceName"
-                  defaultValue={editingOrder?.invoiceName ?? ""}
-                />
-              </FormField>
-              <FormField label="Contato responsável">
-                <Input
-                  name="responsibleContact"
-                  defaultValue={editingOrder?.responsibleContact ?? ""}
-                />
-              </FormField>
-              <SelectField
+          <Card className={`${sectionCardClass} lg:col-span-12`}>
+            <CardHeader>
+              <CardTitle>Montagem</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-[minmax(220px,320px)_180px_1fr]">
+              <RadioGroup
                 name="priority"
                 label="Prioridade da montagem"
                 options={priorityOptions}
@@ -263,18 +399,8 @@ export default async function SalesPage({
                 defaultValue={
                   editingOrder?.assemblyOrder?.priority ?? undefined
                 }
+                columns="grid-cols-3"
               />
-            </FieldGroup>
-
-            <FormField label="Endereço de entrega">
-              <textarea
-                name="deliveryAddress"
-                defaultValue={editingOrder?.deliveryAddress ?? ""}
-                className={textareaClass}
-              />
-            </FormField>
-
-            <FieldGroup className="grid gap-3 md:grid-cols-[180px_1fr]">
               <FormField label="Data programada">
                 <Input
                   type="date"
@@ -292,57 +418,28 @@ export default async function SalesPage({
                   }
                 />
               </FormField>
-            </FieldGroup>
-
-            <FieldGroup className="gap-2">
-              <FieldLabel>Itens</FieldLabel>
-              <div className="grid gap-2">
-                {itemRows.map((_, index) => {
-                  const item = editingOrder?.items[index];
-                  return (
-                    <div
-                      key={index}
-                      className="grid gap-2 md:grid-cols-[110px_1fr]"
-                    >
-                      <Input
-                        name="itemQuantity"
-                        type="number"
-                        min="1"
-                        defaultValue={item?.quantity ?? (index === 0 ? 1 : "")}
-                        aria-label={`Quantidade ${index + 1}`}
-                      />
-                      <Input
-                        name="itemDescription"
-                        defaultValue={item?.description ?? ""}
-                        aria-label={`Descrição ${index + 1}`}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </FieldGroup>
-
-            <FormField label="Observações">
-              <textarea
-                name="notes"
-                defaultValue={editingOrder?.notes ?? ""}
-                className={textareaClass}
-              />
-            </FormField>
-
-            <div className="flex justify-end">
-              <Button type="submit">
-                {editingOrder ? "Salvar alterações" : "Criar ordem"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </form>
+      </section>
 
       <Card>
-        <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
-          <CardTitle>Ordens do mês</CardTitle>
-          <CardDescription>{orders.length} registros</CardDescription>
+        <CardHeader className="gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <CardTitle>Ordens do mês</CardTitle>
+            <CardDescription>{orders.length} registros</CardDescription>
+          </div>
+          <form className="flex flex-wrap items-center gap-2">
+            <Input
+              type="month"
+              name="month"
+              defaultValue={month.key}
+              className="w-[180px]"
+            />
+            <Button type="submit" variant="outline">
+              Filtrar
+            </Button>
+          </form>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full min-w-[920px] text-left text-sm">
