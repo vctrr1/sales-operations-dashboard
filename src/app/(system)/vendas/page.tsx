@@ -81,9 +81,12 @@ export default async function SalesPage({
   const hasEditingSeller =
     !!editingOrder?.sellerName &&
     sellers.some((seller) => seller.name === editingOrder.sellerName);
+
   const itemRows = Array.from({
     length: Math.max(5, editingOrder?.items.length ?? 0),
   });
+
+  const formKey = editingOrder?.id ?? "new-order";
 
   return (
     <div className="grid gap-6">
@@ -119,7 +122,7 @@ export default async function SalesPage({
         </CardHeader>
 
         <CardContent>
-          <form action={saveSaleOrder} className="grid gap-5">
+          <form key={formKey} action={saveSaleOrder} className="grid gap-5">
             <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
             <FieldGroup className="grid gap-3 md:grid-cols-4">
               <FormField label="Vendedor">
@@ -129,7 +132,7 @@ export default async function SalesPage({
                   defaultValue={editingOrder?.sellerName}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione um vendedor" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {editingOrder?.sellerName && !hasEditingSeller ? (
@@ -150,9 +153,7 @@ export default async function SalesPage({
                   type="date"
                   name="quoteDate"
                   required
-                  defaultValue={dateInputValue(
-                    editingOrder?.quoteDate ?? month.start,
-                  )}
+                  defaultValue={dateInputValue(editingOrder?.quoteDate)}
                 />
               </FormField>
               <SelectField
