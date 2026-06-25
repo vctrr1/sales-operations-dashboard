@@ -2,23 +2,22 @@
 
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
-export function LogoutButton() {
+export function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
 
   return (
-    <Button
-      variant="outline"
+    <button
       type="button"
+      className={className}
       onClick={async () => {
         await authClient.signOut();
         router.replace("/login");
       }}
     >
-      <LogOut />
       Sair
-    </Button>
+      <LogOut className="size-4" />
+    </button>
   );
 }

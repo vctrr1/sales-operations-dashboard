@@ -6,7 +6,7 @@ import { Inconsolata } from "next/font/google";
 const inconsolata = Inconsolata({ subsets: ["latin"], weight: ["500"] });
 
 export const metadata: Metadata = {
-  title: "Chairs Store",
+  title: "Emilly Móveis",
   description: "Sistema interno de vendas e montagem",
 };
 

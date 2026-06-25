@@ -2,9 +2,10 @@ import Link from "next/link";
 import {
   ClipboardList,
   Goal,
-  LayoutDashboard,
-  Shield,
-  Truck,
+  UserRoundPen,
+  UserKey,
+  Drill,
+  ChartColumn,
 } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
@@ -17,25 +18,26 @@ import {
   canAccessSales,
 } from "@/lib/permissions";
 import { ThemeToggle } from "./theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 const navItemClass =
-  "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground";
+  "inline-flex h-9 items-center gap-1 rounded-lg px-3 text-md font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground";
 
 export function AppNavbar({ user }: { user: AppUser }) {
   return (
-    <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b bg-background/70 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <Button
-            asChild
-            variant="ghost"
-            className="px-0 text-base font-semibold"
-          >
-            <Link href="/">Chairs Store</Link>
+          <Button asChild variant="ghost" className="text-xl px-0">
+            <Link href="/">Emilly Móveis</Link>
           </Button>
-          <span className="rounded-md border px-2 py-1 text-xs text-muted-foreground">
-            {roleLabels[user.role]}
-          </span>
           {user.isBootstrapAdmin ? (
             <span className="rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900">
               Primeiro admin
@@ -46,36 +48,60 @@ export function AppNavbar({ user }: { user: AppUser }) {
           {canAccessSales(user.role) ? (
             <>
               <Link className={navItemClass} href="/vendas">
-                <ClipboardList className="size-4" />
+                <ClipboardList className="size-5" />
                 Vendas
               </Link>
               <Link className={navItemClass} href="/vendas/dashboard">
-                <LayoutDashboard className="size-4" />
+                <ChartColumn className="size-5" />
                 Indicadores
               </Link>
             </>
           ) : null}
           {canAccessOperations(user.role) ? (
             <Link className={navItemClass} href="/montagem">
-              <Truck className="size-4" />
+              <Drill className="size-5" />
               Montagem
             </Link>
           ) : null}
           {canAccessAdmin(user.role) ? (
             <>
               <Link className={navItemClass} href="/financeiro">
-                <Goal className="size-4" />
+                <Goal className="size-5" />
                 Financeiro
               </Link>
               <Link className={navItemClass} href="/admin/usuarios">
-                <Shield className="size-4" />
+                <UserRoundPen className="size-5" />
                 Usuários
               </Link>
             </>
           ) : null}
-          <LogoutButton />
-          <ThemeToggle />
         </nav>
+        <div className="flex gap-2 items-center">
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="flex h-9 w-9 rounded-full bg-blue-600 text-md font-semibold text-white">
+                {user.name.at(0)?.toUpperCase()}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40 ">
+              <DropdownMenuLabel className="text-md text-center font-semibold py-0">
+                {user.name}
+              </DropdownMenuLabel>
+              <DropdownMenuLabel className="text-sm text-center text-muted-foreground py-0">
+                {roleLabels[user.role]}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="justify-between text-md">
+                Alterar Senha
+                <UserKey />
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <LogoutButton className="flex w-full items-center gap-2 justify-between text-md" />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );
