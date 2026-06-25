@@ -44,6 +44,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { saveSaleOrder } from "../actions";
 import { Textarea } from "@/components/ui/textarea";
+import { SaleValuesCard } from "./components/sale-values-card";
 
 const cardTitleClass = "text-lg";
 const formTextClass =
@@ -176,37 +177,11 @@ export default async function SalesPage({
               </FormField>
             </CardContent>
           </Card>
-
-          <Card className={`lg:col-span-3`}>
-            <CardHeader>
-              <CardTitle className={cardTitleClass}>Valores</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <FormField label="Valor Orçado:">
-                <Input
-                  name="quotedAmount"
-                  inputMode="decimal"
-                  required
-                  defaultValue={editingOrder?.quotedAmount?.toString() ?? ""}
-                />
-              </FormField>
-              <FormField label="Valor Fechado:">
-                <Input
-                  name="closedAmount"
-                  inputMode="decimal"
-                  defaultValue={editingOrder?.closedAmount?.toString() ?? ""}
-                />
-              </FormField>
-              <FormField label="Desconto (%):">
-                <Input
-                  name="discountPercent"
-                  inputMode="decimal"
-                  defaultValue={editingOrder?.discountPercent?.toString() ?? ""}
-                />
-              </FormField>
-            </CardContent>
-          </Card>
-
+          <SaleValuesCard
+            quotedAmount={editingOrder?.quotedAmount?.toString() ?? ""}
+            closedAmount={editingOrder?.closedAmount?.toString() ?? ""}
+            discountPercent={editingOrder?.discountPercent?.toString() ?? ""}
+          />
           <Card className={`lg:col-span-3`}>
             <CardHeader>
               <CardTitle className={cardTitleClass}>Pagamento</CardTitle>
