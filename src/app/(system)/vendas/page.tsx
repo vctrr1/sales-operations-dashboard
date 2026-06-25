@@ -40,9 +40,7 @@ import { requireRole } from "@/lib/permissions";
 import { saveSaleOrder } from "../actions";
 import FormField from "./components/form-field";
 import SelectField from "./components/select-field";
-
-const textareaClass =
-  "min-h-20 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30";
+import { Textarea } from "@/components/ui/textarea";
 
 const sectionCardClass = "rounded-lg";
 
@@ -70,7 +68,7 @@ function RadioGroup<T extends string>({
         {options.map((option) => (
           <label
             key={option}
-            className="flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border border-input px-2.5 py-1.5 text-sm transition-colors has-checked:border-primary/50 has-checked:bg-primary/5 hover:bg-muted/50 dark:has-checked:bg-primary/10"
+            className="flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border border-input px-2 py-1 text-sm transition-colors has-checked:border-primary/50 has-checked:bg-primary/5 hover:bg-muted/50 dark:has-checked:bg-primary/10"
           >
             <input
               type="radio"
@@ -169,10 +167,10 @@ export default async function SalesPage({
 
           <Card className={`${sectionCardClass} lg:col-span-3`}>
             <CardHeader>
-              <CardTitle>Informações gerais</CardTitle>
+              <CardTitle>Informações Gerais</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
-              <FormField label="Vendedor">
+              <FormField label="Vendedor:">
                 <Select
                   name="sellerName"
                   required
@@ -253,7 +251,7 @@ export default async function SalesPage({
 
           <Card className={`${sectionCardClass} lg:col-span-3`}>
             <CardHeader>
-              <CardTitle>Forma de pagamento</CardTitle>
+              <CardTitle>Forma de Pagamento</CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup
@@ -268,7 +266,7 @@ export default async function SalesPage({
 
           <Card className={`${sectionCardClass} lg:col-span-3`}>
             <CardHeader>
-              <CardTitle>Produto e logística</CardTitle>
+              <CardTitle>Produto e Logística</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
               <SelectField
@@ -286,19 +284,12 @@ export default async function SalesPage({
                 defaultValue={editingOrder?.logisticsType}
                 columns="grid-cols-1"
               />
-              <FormField label="Endereço de entrega">
-                <textarea
-                  name="deliveryAddress"
-                  defaultValue={editingOrder?.deliveryAddress ?? ""}
-                  className={textareaClass}
-                />
-              </FormField>
             </CardContent>
           </Card>
 
           <Card className={`${sectionCardClass} lg:col-span-8`}>
             <CardHeader>
-              <CardTitle>Itens do pedido</CardTitle>
+              <CardTitle>Itens do Pedido</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
               <FieldGroup className="grid gap-3 md:grid-cols-3">
@@ -319,6 +310,15 @@ export default async function SalesPage({
                   <Input
                     name="responsibleContact"
                     defaultValue={editingOrder?.responsibleContact ?? ""}
+                  />
+                </FormField>
+                <FormField
+                  label="Endereço de entrega"
+                  className="md:col-span-2"
+                >
+                  <Input
+                    name="deliveryAddress"
+                    defaultValue={editingOrder?.deliveryAddress ?? ""}
                   />
                 </FormField>
               </FieldGroup>
@@ -377,10 +377,9 @@ export default async function SalesPage({
                 columns="grid-cols-1"
               />
               <FormField label="Observações">
-                <textarea
+                <Textarea
                   name="notes"
                   defaultValue={editingOrder?.notes ?? ""}
-                  className={textareaClass}
                 />
               </FormField>
             </CardContent>
