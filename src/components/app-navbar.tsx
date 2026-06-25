@@ -96,8 +96,8 @@ export function AppNavbar({ user }: { user: AppUser }) {
                 Alterar Senha
                 <UserKey />
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <LogoutButton className="flex w-full items-center gap-2 justify-between text-md" />
+              <DropdownMenuItem className="text-md">
+                <LogoutButton className="flex w-full items-center gap-2 justify-between" />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
