@@ -2,7 +2,11 @@ import { UserRole } from "@/generated/prisma/enums";
 import { AppNavbar, PendingAccess } from "@/components/app-navbar";
 import { requireUser } from "@/lib/permissions";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const user = await requireUser();
 
   if (user.role === UserRole.PENDING) {
@@ -12,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-svh bg-muted/30">
       <AppNavbar user={user} />
-      <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-[1500px] px-4 py-6">{children}</main>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Ban, Edit, Plus } from "lucide-react";
+import { Ban, Edit, Plus, Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  RadioGroup,
+  SelectField,
+  FormField,
+} from "./components/group-componets";
 import {
   budgetOriginLabels,
   budgetOriginOptions,
@@ -38,52 +43,11 @@ import { dateInputValue, displayDate, money, parseMonth } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { saveSaleOrder } from "../actions";
-import FormField from "./components/form-field";
-import SelectField from "./components/select-field";
 import { Textarea } from "@/components/ui/textarea";
 
-const sectionCardClass = "rounded-lg";
-
-function RadioGroup<T extends string>({
-  name,
-  label,
-  options,
-  labels,
-  defaultValue,
-  columns = "sm:grid-cols-2",
-}: {
-  name: string;
-  label: string;
-  options: T[];
-  labels: Record<T, string>;
-  defaultValue?: T;
-  columns?: string;
-}) {
-  const checkedValue = defaultValue ?? options[0];
-
-  return (
-    <fieldset className="grid gap-2">
-      <legend className="text-sm font-medium leading-snug">{label}</legend>
-      <div className={`grid gap-2 ${columns}`}>
-        {options.map((option) => (
-          <label
-            key={option}
-            className="flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border border-input px-2 py-1 text-sm transition-colors has-checked:border-primary/50 has-checked:bg-primary/5 hover:bg-muted/50 dark:has-checked:bg-primary/10"
-          >
-            <input
-              type="radio"
-              name={name}
-              value={option}
-              defaultChecked={option === checkedValue}
-              className="size-4 accent-primary"
-            />
-            <span className="leading-snug">{labels[option]}</span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
+const cardTitleClass = "text-lg";
+const formTextClass =
+  "text-base [&_button[data-slot=select-trigger]]:text-base [&_input]:text-base [&_textarea]:text-base";
 
 type SearchParams = Promise<{ month?: string; edit?: string }>;
 
@@ -119,9 +83,6 @@ export default async function SalesPage({
       orderBy: { name: "asc" },
     }),
   ]);
-  const hasEditingSeller =
-    !!editingOrder?.sellerName &&
-    sellers.some((seller) => seller.name === editingOrder.sellerName);
 
   const itemRows = Array.from({
     length: Math.max(5, editingOrder?.items.length ?? 0),
@@ -134,8 +95,8 @@ export default async function SalesPage({
       <section className="grid gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-lg font-semibold">Vendas</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-semibold">Vendas</h1>
+            <p className="text-base text-muted-foreground">
               {editingOrder
                 ? `Editando ordem ${editingOrder.orderNumber}`
                 : "Novo orçamento"}
@@ -143,15 +104,15 @@ export default async function SalesPage({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {editingOrder ? (
-              <Button asChild variant="destructive">
+              <Button asChild variant="destructive" className="text-base">
                 <Link href={`/vendas?month=${month.key}`}>
                   <Ban />
                   Cancelar
                 </Link>
               </Button>
             ) : null}
-            <Button type="submit" form="sale-order-form">
-              <Plus />
+            <Button type="submit" form="sale-order-form" className="text-base">
+              {editingOrder ? <Save /> : <Plus />}
               {editingOrder ? "Salvar Alterações" : "Criar Ordem"}
             </Button>
           </div>
@@ -161,13 +122,15 @@ export default async function SalesPage({
           id="sale-order-form"
           key={formKey}
           action={saveSaleOrder}
-          className="grid gap-4 lg:grid-cols-12"
+          className={`grid gap-4 lg:grid-cols-12 ${formTextClass}`}
         >
           <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
 
-          <Card className={`${sectionCardClass} lg:col-span-3`}>
+          <Card className={`lg:col-span-3`}>
             <CardHeader>
-              <CardTitle>Informações Gerais</CardTitle>
+              <CardTitle className={cardTitleClass}>
+                Informações Gerais
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
               <FormField label="Vendedor:">
@@ -180,11 +143,6 @@ export default async function SalesPage({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {editingOrder?.sellerName && !hasEditingSeller ? (
-                      <SelectItem value={editingOrder.sellerName}>
-                        {editingOrder.sellerName} (atual)
-                      </SelectItem>
-                    ) : null}
                     {sellers.map((seller) => (
                       <SelectItem key={seller.id} value={seller.name}>
                         {seller.name}
@@ -193,7 +151,7 @@ export default async function SalesPage({
                   </SelectContent>
                 </Select>
               </FormField>
-              <FormField label="Data do orçamento">
+              <FormField label="Data do Orçamento:">
                 <Input
                   type="date"
                   name="quoteDate"
@@ -203,13 +161,13 @@ export default async function SalesPage({
               </FormField>
               <RadioGroup
                 name="commercialStatus"
-                label="Status"
+                label="Status:"
                 options={commercialStatusOptions}
                 labels={commercialStatusLabels}
                 defaultValue={editingOrder?.commercialStatus}
                 columns="grid-cols-2"
               />
-              <FormField label="Data do fechamento">
+              <FormField label="Data do Fechamento:">
                 <Input
                   type="date"
                   name="closedAt"
@@ -219,12 +177,12 @@ export default async function SalesPage({
             </CardContent>
           </Card>
 
-          <Card className={`${sectionCardClass} lg:col-span-3`}>
+          <Card className={`lg:col-span-3`}>
             <CardHeader>
-              <CardTitle>Valores</CardTitle>
+              <CardTitle className={cardTitleClass}>Valores</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
-              <FormField label="Valor orçado">
+              <FormField label="Valor Orçado:">
                 <Input
                   name="quotedAmount"
                   inputMode="decimal"
@@ -232,14 +190,14 @@ export default async function SalesPage({
                   defaultValue={editingOrder?.quotedAmount?.toString() ?? ""}
                 />
               </FormField>
-              <FormField label="Valor fechado">
+              <FormField label="Valor Fechado:">
                 <Input
                   name="closedAmount"
                   inputMode="decimal"
                   defaultValue={editingOrder?.closedAmount?.toString() ?? ""}
                 />
               </FormField>
-              <FormField label="Desconto (%)">
+              <FormField label="Desconto (%):">
                 <Input
                   name="discountPercent"
                   inputMode="decimal"
@@ -249,14 +207,14 @@ export default async function SalesPage({
             </CardContent>
           </Card>
 
-          <Card className={`${sectionCardClass} lg:col-span-3`}>
+          <Card className={`lg:col-span-3`}>
             <CardHeader>
-              <CardTitle>Forma de Pagamento</CardTitle>
+              <CardTitle className={cardTitleClass}>Pagamento</CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup
                 name="paymentMethod"
-                label="Forma de pagamento"
+                label="Forma de Pagamento:"
                 options={paymentMethodOptions}
                 labels={paymentMethodLabels}
                 defaultValue={editingOrder?.paymentMethod ?? undefined}
@@ -264,21 +222,23 @@ export default async function SalesPage({
             </CardContent>
           </Card>
 
-          <Card className={`${sectionCardClass} lg:col-span-3`}>
+          <Card className={` lg:col-span-3`}>
             <CardHeader>
-              <CardTitle>Produto e Logística</CardTitle>
+              <CardTitle className={cardTitleClass}>
+                Produto e Logística
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
               <SelectField
                 name="productCategory"
-                label="Categoria do produto"
+                label="Categoria do Produto:"
                 options={productCategoryOptions}
                 labels={productCategoryLabels}
                 defaultValue={editingOrder?.productCategory}
               />
               <RadioGroup
                 name="logisticsType"
-                label="Logística"
+                label="Logística:"
                 options={logisticsTypeOptions}
                 labels={logisticsTypeLabels}
                 defaultValue={editingOrder?.logisticsType}
@@ -287,33 +247,33 @@ export default async function SalesPage({
             </CardContent>
           </Card>
 
-          <Card className={`${sectionCardClass} lg:col-span-8`}>
+          <Card className={` lg:col-span-8`}>
             <CardHeader>
-              <CardTitle>Itens do Pedido</CardTitle>
+              <CardTitle className={cardTitleClass}>Itens do Pedido</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
               <FieldGroup className="grid gap-3 md:grid-cols-3">
-                <FormField label="Cliente">
+                <FormField label="Cliente:">
                   <Input
                     name="customerName"
                     required
                     defaultValue={editingOrder?.customerName ?? ""}
                   />
                 </FormField>
-                <FormField label="Nome da nota" className="md:col-span-2">
+                <FormField label="Nome da Nota:" className="md:col-span-2">
                   <Input
                     name="invoiceName"
                     defaultValue={editingOrder?.invoiceName ?? ""}
                   />
                 </FormField>
-                <FormField label="Contato responsável">
+                <FormField label="Contato Responsável:">
                   <Input
                     name="responsibleContact"
                     defaultValue={editingOrder?.responsibleContact ?? ""}
                   />
                 </FormField>
                 <FormField
-                  label="Endereço de entrega"
+                  label="Endereço de Entrega:"
                   className="md:col-span-2"
                 >
                   <Input
@@ -324,7 +284,7 @@ export default async function SalesPage({
               </FieldGroup>
 
               <FieldGroup className="gap-2">
-                <FieldLabel>Itens</FieldLabel>
+                <FieldLabel className="text-base">Itens</FieldLabel>
                 <div className="grid gap-2">
                   {itemRows.map((_, index) => {
                     const item = editingOrder?.items[index];
@@ -355,14 +315,16 @@ export default async function SalesPage({
             </CardContent>
           </Card>
 
-          <Card className={`${sectionCardClass} lg:col-span-4`}>
+          <Card className={` lg:col-span-4`}>
             <CardHeader>
-              <CardTitle>Outras informações</CardTitle>
+              <CardTitle className={cardTitleClass}>
+                Outras informações
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4">
               <RadioGroup
                 name="customerOrigin"
-                label="Origem do cliente"
+                label="Origem do Cliente:"
                 options={customerOriginOptions}
                 labels={customerOriginLabels}
                 defaultValue={editingOrder?.customerOrigin}
@@ -370,13 +332,13 @@ export default async function SalesPage({
               />
               <RadioGroup
                 name="budgetOrigin"
-                label="Origem do orçamento"
+                label="Origem do Orçamento:"
                 options={budgetOriginOptions}
                 labels={budgetOriginLabels}
                 defaultValue={editingOrder?.budgetOrigin}
                 columns="grid-cols-1"
               />
-              <FormField label="Observações">
+              <FormField label="Observações:">
                 <Textarea
                   name="notes"
                   defaultValue={editingOrder?.notes ?? ""}
@@ -385,9 +347,9 @@ export default async function SalesPage({
             </CardContent>
           </Card>
 
-          <Card className={`${sectionCardClass} lg:col-span-12`}>
+          <Card className={`lg:col-span-12`}>
             <CardHeader>
-              <CardTitle>Montagem</CardTitle>
+              <CardTitle className={cardTitleClass}>Montagem</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-[minmax(220px,320px)_180px_1fr]">
               <RadioGroup
@@ -425,24 +387,26 @@ export default async function SalesPage({
       <Card>
         <CardHeader className="gap-3 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <CardTitle>Ordens do mês</CardTitle>
-            <CardDescription>{orders.length} registros</CardDescription>
+            <CardTitle className={cardTitleClass}>Ordens do mês</CardTitle>
+            <CardDescription className="text-base">
+              {orders.length} registros
+            </CardDescription>
           </div>
           <form className="flex flex-wrap items-center gap-2">
             <Input
               type="month"
               name="month"
               defaultValue={month.key}
-              className="w-[180px]"
+              className="w-[180px] text-base md:text-base"
             />
-            <Button type="submit" variant="outline">
+            <Button type="submit" variant="outline" className="text-base">
               Filtrar
             </Button>
           </form>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-sm">
-            <thead className="border-b text-xs uppercase text-muted-foreground">
+          <table className="w-full min-w-[920px] text-left text-base">
+            <thead className="border-b text-sm uppercase text-muted-foreground">
               <tr>
                 <th className="py-2 pr-3">Ordem</th>
                 <th className="py-2 pr-3">Cliente</th>
@@ -471,7 +435,12 @@ export default async function SalesPage({
                   </td>
                   <td className="py-3 pr-3">{displayDate(order.quoteDate)}</td>
                   <td className="py-3 pr-3 text-right">
-                    <Button asChild variant="outline" size="sm">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="text-base"
+                    >
                       <Link
                         href={`/vendas?month=${month.key}&edit=${order.id}`}
                       >

@@ -85,18 +85,18 @@ export function AppNavbar({ user }: { user: AppUser }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 ">
-              <DropdownMenuLabel className="text-md text-center font-semibold py-0">
+              <DropdownMenuLabel className="text-lg text-center font-semibold py-0">
                 {user.name}
               </DropdownMenuLabel>
-              <DropdownMenuLabel className="text-sm text-center text-muted-foreground py-0">
+              <DropdownMenuLabel className="text-base text-center text-muted-foreground py-0">
                 {roleLabels[user.role]}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="justify-between text-md">
+              <DropdownMenuItem className="justify-between text-base">
                 Alterar Senha
                 <UserKey />
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-md">
+              <DropdownMenuItem className="text-base">
                 <LogoutButton className="flex w-full items-center gap-2 justify-between" />
               </DropdownMenuItem>
             </DropdownMenuContent>
