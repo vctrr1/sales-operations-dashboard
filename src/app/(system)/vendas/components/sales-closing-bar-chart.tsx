@@ -43,7 +43,7 @@ export function SalesClosingBarChart({
       className="h-64 w-full aspect-auto"
       initialDimension={{ width: 520, height: 256 }}
     >
-      <BarChart accessibilityLayer data={data}>
+      <BarChart accessibilityLayer data={data} barCategoryGap="30%">
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="month"
@@ -71,7 +71,12 @@ export function SalesClosingBarChart({
             />
           }
         />
-        <Bar dataKey="totalClosed" fill="var(--color-totalClosed)" radius={8} />
+        <Bar
+          dataKey="totalClosed"
+          fill="var(--color-totalClosed)"
+          radius={8}
+          maxBarSize={56}
+        />
       </BarChart>
     </ChartContainer>
   );
