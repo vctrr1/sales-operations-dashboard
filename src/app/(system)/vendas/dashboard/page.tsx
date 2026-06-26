@@ -125,22 +125,40 @@ export default async function SalesDashboardPage({
 }: {
   searchParams: SearchParams;
 }) {
-  await requireRole([UserRole.SALES, UserRole.ADMIN]);
+  const user = await requireRole([UserRole.SALES, UserRole.ADMIN]);
   const params = await searchParams;
   const month = parseMonth(params.month);
+  const isAdmin = user.role === UserRole.ADMIN;
+  const sellerKey = user.name.toUpperCase();
 
   const [orders, goals] = await Promise.all([
     prisma.saleOrder.findMany({
       where: {
-        OR: [
-          { quoteDate: { gte: month.start, lt: month.end } },
-          { closedAt: { gte: month.start, lt: month.end } },
+        AND: [
+          {
+            OR: [
+              { quoteDate: { gte: month.start, lt: month.end } },
+              { closedAt: { gte: month.start, lt: month.end } },
+            ],
+          },
+          ...(isAdmin
+            ? []
+            : [
+                {
+                  sellerName: {
+                    equals: user.name,
+                    mode: "insensitive" as const,
+                  },
+                },
+              ]),
         ],
       },
       orderBy: { sellerName: "asc" },
     }),
     prisma.monthlyGoal.findMany({
-      where: { month: month.start },
+      where: isAdmin
+        ? { month: month.start }
+        : { month: month.start, sellerName: sellerKey },
     }),
   ]);
 
@@ -149,10 +167,12 @@ export default async function SalesDashboardPage({
     new Set(orders.map((order) => order.sellerName)),
   ).sort();
   const generalMetric = buildMetric(
-    "Geral",
+    isAdmin ? "Geral" : user.name,
     orders,
     month,
-    goalsBySeller.get(GENERAL_GOAL_SELLER),
+    isAdmin
+      ? goalsBySeller.get(GENERAL_GOAL_SELLER)
+      : goalsBySeller.get(sellerKey),
   );
   const sellerMetrics = sellers.map((seller) =>
     buildMetric(
@@ -168,7 +188,7 @@ export default async function SalesDashboardPage({
       <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-xl font-semibold">Indicadores</h1>
-          <p className="text-sm text-muted-foreground">Comercial mensal</p>
+          <p className="text-base text-muted-foreground">Comercial Mensal</p>
         </div>
         <form className="flex items-center gap-2">
           <Input
@@ -190,7 +210,7 @@ export default async function SalesDashboardPage({
           value={money(generalMetric.totalQuoted)}
         />
         <MetricCard
-          title="Total fechado"
+          title="Total Fechado"
           value={money(generalMetric.totalClosed)}
         />
         <MetricCard
@@ -198,12 +218,12 @@ export default async function SalesDashboardPage({
           value={percent(generalMetric.conversionCount)}
         />
         <MetricCard title="Vendas" value={String(generalMetric.saleCount)} />
-        <MetricCard title="Ticket médio" value={money(generalMetric.ticket)} />
+        <MetricCard title="Ticket Médio" value={money(generalMetric.ticket)} />
       </section>
 
       <Card>
         <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
-          <CardTitle>Meta geral</CardTitle>
+          <CardTitle>{isAdmin ? "Meta Geral" : "Minha Meta"}</CardTitle>
           <CardDescription>
             Conversão valor {percent(generalMetric.conversionValue)}
           </CardDescription>
@@ -214,34 +234,45 @@ export default async function SalesDashboardPage({
       </Card>
 
       <section className="grid gap-4">
-        {sellerMetrics.map((metric) => (
-          <Card key={metric.sellerName}>
-            <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
-              <CardTitle>{metric.sellerName}</CardTitle>
-              <CardDescription>
-                Desconto médio {percent(metric.discountAverage)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-3 md:grid-cols-6">
-                <MetricCard title="Orçado" value={money(metric.totalQuoted)} />
-                <MetricCard title="Fechado" value={money(metric.totalClosed)} />
-                <MetricCard
-                  title="Conversão nº"
-                  value={percent(metric.conversionCount)}
-                />
-                <MetricCard
-                  title="Conversão R$"
-                  value={percent(metric.conversionValue)}
-                />
-                <MetricCard title="Vendas" value={String(metric.saleCount)} />
-                <MetricCard title="Ticket" value={money(metric.ticket)} />
-              </div>
-              <GoalBar metric={metric} />
-            </CardContent>
-          </Card>
-        ))}
-        {sellerMetrics.length === 0 ? (
+        {isAdmin
+          ? sellerMetrics.map((metric) => (
+              <Card key={metric.sellerName}>
+                <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
+                  <CardTitle>{metric.sellerName}</CardTitle>
+                  <CardDescription>
+                    Desconto médio {percent(metric.discountAverage)}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <div className="grid gap-3 md:grid-cols-6">
+                    <MetricCard
+                      title="Orçado"
+                      value={money(metric.totalQuoted)}
+                    />
+                    <MetricCard
+                      title="Fechado"
+                      value={money(metric.totalClosed)}
+                    />
+                    <MetricCard
+                      title="Conversão nº"
+                      value={percent(metric.conversionCount)}
+                    />
+                    <MetricCard
+                      title="Conversão R$"
+                      value={percent(metric.conversionValue)}
+                    />
+                    <MetricCard
+                      title="Vendas"
+                      value={String(metric.saleCount)}
+                    />
+                    <MetricCard title="Ticket" value={money(metric.ticket)} />
+                  </div>
+                  <GoalBar metric={metric} />
+                </CardContent>
+              </Card>
+            ))
+          : null}
+        {orders.length === 0 ? (
           <Card>
             <CardContent className="text-sm text-muted-foreground">
               Nenhum registro comercial no mês selecionado.
@@ -249,15 +280,6 @@ export default async function SalesDashboardPage({
           </Card>
         ) : null}
       </section>
-
-      <Card>
-        <CardContent className="text-sm text-muted-foreground">
-          Métodos considerados para desconto médio:{" "}
-          {Array.from(discountedPaymentMethods)
-            .map((method) => paymentMethodLabels[method])
-            .join(", ")}
-        </CardContent>
-      </Card>
     </div>
   );
 }
