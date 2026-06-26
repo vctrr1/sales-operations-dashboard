@@ -20,7 +20,7 @@ import {
   commercialStatusLabels,
   commercialStatusOptions,
 } from "@/lib/domain";
-import { dateInputValue } from "@/lib/format";
+import { dateInputValue, localDateInputValue } from "@/lib/format";
 import { FormField } from "./group-componets";
 
 type SellerOption = {
@@ -36,12 +36,6 @@ type SaleGeneralInfoCardProps = {
   closedAt?: Date | string | null;
 };
 
-function todayInputValue() {
-  const now = new Date();
-  const timezoneOffset = now.getTimezoneOffset() * 60_000;
-  return new Date(now.getTime() - timezoneOffset).toISOString().slice(0, 10);
-}
-
 export function SaleGeneralInfoCard({
   sellers,
   sellerName,
@@ -55,7 +49,7 @@ export function SaleGeneralInfoCard({
   const [closedDate, setClosedDate] = useState(dateInputValue(closedAt));
 
   const quoteDateValue = useMemo(
-    () => dateInputValue(quoteDate) || todayInputValue(),
+    () => dateInputValue(quoteDate) || localDateInputValue(),
     [quoteDate],
   );
 
@@ -71,7 +65,7 @@ export function SaleGeneralInfoCard({
     setStatus(nextStatus);
 
     if (nextStatus === CommercialStatus.CLOSED) {
-      setClosedDate((currentDate) => currentDate || todayInputValue());
+      setClosedDate((currentDate) => currentDate || localDateInputValue());
       return;
     }
 

@@ -16,7 +16,13 @@ import {
   logisticsTypeLabels,
   priorityLabels,
 } from "@/lib/domain";
-import { dateInputValue, displayDate, money, monthInputValue, parseMonth } from "@/lib/format";
+import {
+  displayDate,
+  localDateInputValue,
+  money,
+  monthInputValue,
+  parseMonth,
+} from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { saveMonthlyGoal } from "../actions";
@@ -24,7 +30,7 @@ import { saveMonthlyGoal } from "../actions";
 type SearchParams = Promise<{ date?: string; month?: string }>;
 
 function startOfUtcDay(date: string | undefined) {
-  const source = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : dateInputValue(new Date());
+  const source = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : localDateInputValue();
   const start = new Date(`${source}T00:00:00.000Z`);
   const end = new Date(start);
   end.setUTCDate(end.getUTCDate() + 1);

@@ -31,8 +31,13 @@ export function displayDate(date: Date | null | undefined) {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(date);
 }
 
+export function localDateInputValue(date = new Date()) {
+  const timezoneOffset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 10);
+}
+
 export function monthInputValue(date = new Date()) {
-  return date.toISOString().slice(0, 7);
+  return localDateInputValue(date).slice(0, 7);
 }
 
 export function parseMonth(month?: string | null) {
