@@ -60,7 +60,7 @@ export function AppNavbar({ user }: { user: AppUser }) {
           {canAccessOperations(user.role) ? (
             <Link className={navItemClass} href="/montagem">
               <Drill className="size-5" />
-              Montagem
+              Produção
             </Link>
           ) : null}
           {canAccessAdmin(user.role) ? (

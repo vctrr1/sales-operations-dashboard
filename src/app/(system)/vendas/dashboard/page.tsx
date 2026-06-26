@@ -1,42 +1,45 @@
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SalesAdminDashboard } from "../components/sales-admin-dashboard";
+import { SalesSellerDashboard } from "../components/sales-seller-dashboard";
+import type {
+  SalesClosingChartItem,
+  SalesDashboardMetric,
+} from "../components/sales-dashboard-types";
 import {
   discountedPaymentMethods,
   GENERAL_GOAL_SELLER,
-  paymentMethodLabels,
 } from "@/lib/domain";
-import { money, parseMonth, percent, toDecimalNumber } from "@/lib/format";
+import { parseMonth, toDecimalNumber } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { Funnel } from "lucide-react";
 
 type SearchParams = Promise<{ month?: string }>;
 
-type Metric = {
-  sellerName: string;
-  quoteCount: number;
-  saleCount: number;
-  totalQuoted: number;
-  totalClosed: number;
-  conversionCount: number;
-  conversionValue: number;
-  ticket: number;
-  discountAverage: number;
-  goalBase: number;
-  goalMid: number;
-  goalSuper: number;
-};
+const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  month: "short",
+  timeZone: "UTC",
+});
 
 function inRange(date: Date | null, start: Date, end: Date) {
   return !!date && date >= start && date < end;
+}
+
+function addUtcMonths(date: Date, amount: number) {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + amount, 1),
+  );
+}
+
+function monthKey(date: Date) {
+  return date.toISOString().slice(0, 7);
+}
+
+function monthLabel(date: Date) {
+  const label = MONTH_LABEL_FORMATTER.format(date).replace(".", "");
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function buildMetric(
@@ -86,38 +89,39 @@ function buildMetric(
     goalBase: toDecimalNumber(goal?.baseAmount as never),
     goalMid: toDecimalNumber(goal?.midAmount as never),
     goalSuper: toDecimalNumber(goal?.superAmount as never),
-  } satisfies Metric;
+  } satisfies SalesDashboardMetric;
 }
 
-function MetricCard({ title, value }: { title: string; value: string }) {
-  return (
-    <Card size="sm">
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <p className="mt-2 text-2xl font-semibold">{value}</p>
-      </CardContent>
-    </Card>
+function buildClosingChartData(
+  orders: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>,
+  selectedMonth: { start: Date },
+) {
+  const chartMonths = Array.from({ length: 7 }, (_, index) =>
+    addUtcMonths(selectedMonth.start, index - 6),
   );
-}
+  const totalByMonth = new Map(chartMonths.map((date) => [monthKey(date), 0]));
 
-function GoalBar({ metric }: { metric: Metric }) {
-  const target = metric.goalSuper || metric.goalMid || metric.goalBase;
-  const progress = target
-    ? Math.min((metric.totalClosed / target) * 100, 100)
-    : 0;
+  for (const order of orders) {
+    if (!order.closedAt) continue;
 
-  return (
-    <div className="grid gap-2">
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
-        <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
-      </div>
-      <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-        <span>Base {money(metric.goalBase)}</span>
-        <span>Média {money(metric.goalMid)}</span>
-        <span>Super {money(metric.goalSuper)}</span>
-      </div>
-    </div>
-  );
+    const key = monthKey(order.closedAt);
+    if (!totalByMonth.has(key)) continue;
+
+    totalByMonth.set(
+      key,
+      (totalByMonth.get(key) ?? 0) + toDecimalNumber(order.closedAmount),
+    );
+  }
+
+  return chartMonths.map((date) => {
+    const key = monthKey(date);
+
+    return {
+      month: monthLabel(date),
+      monthKey: key,
+      totalClosed: totalByMonth.get(key) ?? 0,
+    } satisfies SalesClosingChartItem;
+  });
 }
 
 export default async function SalesDashboardPage({
@@ -130,8 +134,9 @@ export default async function SalesDashboardPage({
   const month = parseMonth(params.month);
   const isAdmin = user.role === UserRole.ADMIN;
   const sellerKey = user.name.toUpperCase();
+  const chartStart = addUtcMonths(month.start, -6);
 
-  const [orders, goals] = await Promise.all([
+  const [orders, goals, closingChartOrders] = await Promise.all([
     prisma.saleOrder.findMany({
       where: {
         AND: [
@@ -160,6 +165,19 @@ export default async function SalesDashboardPage({
         ? { month: month.start }
         : { month: month.start, sellerName: sellerKey },
     }),
+    isAdmin
+      ? Promise.resolve([])
+      : prisma.saleOrder.findMany({
+          where: {
+            commercialStatus: "CLOSED",
+            closedAt: { gte: chartStart, lt: month.end },
+            sellerName: {
+              equals: user.name,
+              mode: "insensitive",
+            },
+          },
+          orderBy: { closedAt: "asc" },
+        }),
   ]);
 
   const goalsBySeller = new Map(goals.map((goal) => [goal.sellerName, goal]));
@@ -182,6 +200,7 @@ export default async function SalesDashboardPage({
       goalsBySeller.get(seller.toUpperCase()) ?? goalsBySeller.get(seller),
     ),
   );
+  const closingChartData = buildClosingChartData(closingChartOrders, month);
 
   return (
     <div className="grid gap-6">
@@ -204,82 +223,18 @@ export default async function SalesDashboardPage({
         </form>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-5">
-        <MetricCard
-          title="Total orçado"
-          value={money(generalMetric.totalQuoted)}
+      {isAdmin ? (
+        <SalesAdminDashboard
+          generalMetric={generalMetric}
+          sellerMetrics={sellerMetrics}
         />
-        <MetricCard
-          title="Total Fechado"
-          value={money(generalMetric.totalClosed)}
+      ) : (
+        <SalesSellerDashboard
+          metric={generalMetric}
+          hasOrders={orders.length > 0}
+          closingChartData={closingChartData}
         />
-        <MetricCard
-          title="Conversão nº"
-          value={percent(generalMetric.conversionCount)}
-        />
-        <MetricCard title="Vendas" value={String(generalMetric.saleCount)} />
-        <MetricCard title="Ticket Médio" value={money(generalMetric.ticket)} />
-      </section>
-
-      <Card>
-        <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
-          <CardTitle>{isAdmin ? "Meta Geral" : "Minha Meta"}</CardTitle>
-          <CardDescription>
-            Conversão valor {percent(generalMetric.conversionValue)}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <GoalBar metric={generalMetric} />
-        </CardContent>
-      </Card>
-
-      <section className="grid gap-4">
-        {isAdmin
-          ? sellerMetrics.map((metric) => (
-              <Card key={metric.sellerName}>
-                <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
-                  <CardTitle>{metric.sellerName}</CardTitle>
-                  <CardDescription>
-                    Desconto médio {percent(metric.discountAverage)}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  <div className="grid gap-3 md:grid-cols-6">
-                    <MetricCard
-                      title="Orçado"
-                      value={money(metric.totalQuoted)}
-                    />
-                    <MetricCard
-                      title="Fechado"
-                      value={money(metric.totalClosed)}
-                    />
-                    <MetricCard
-                      title="Conversão nº"
-                      value={percent(metric.conversionCount)}
-                    />
-                    <MetricCard
-                      title="Conversão R$"
-                      value={percent(metric.conversionValue)}
-                    />
-                    <MetricCard
-                      title="Vendas"
-                      value={String(metric.saleCount)}
-                    />
-                    <MetricCard title="Ticket" value={money(metric.ticket)} />
-                  </div>
-                  <GoalBar metric={metric} />
-                </CardContent>
-              </Card>
-            ))
-          : null}
-        {orders.length === 0 ? (
-          <Card>
-            <CardContent className="text-sm text-muted-foreground">
-              Nenhum registro comercial no mês selecionado.
-            </CardContent>
-          </Card>
-        ) : null}
-      </section>
+      )}
     </div>
   );
 }
