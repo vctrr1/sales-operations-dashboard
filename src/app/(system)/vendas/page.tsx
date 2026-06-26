@@ -212,7 +212,9 @@ export default async function SalesPage({
               </FieldGroup>
 
               <FieldGroup className="gap-2">
-                <FieldLabel className="text-base">Itens</FieldLabel>
+                <FieldLabel className="text-base text-muted-foreground">
+                  Itens:
+                </FieldLabel>
                 <div className="grid gap-2">
                   {itemRows.map((_, index) => {
                     const item = editingOrder?.items[index];

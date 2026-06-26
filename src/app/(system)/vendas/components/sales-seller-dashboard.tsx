@@ -1,6 +1,6 @@
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { money, percent } from "@/lib/format";
-import { Award, CircleDot } from "lucide-react";
 import { SalesClosingBarChart } from "./sales-closing-bar-chart";
 import type {
   SalesClosingChartItem,
@@ -31,21 +31,23 @@ function GoalLevel({
   label,
   amount,
   active,
+  iconSrc,
 }: {
   label: string;
   amount: number;
   active: boolean;
+  iconSrc: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-t py-3 text-sm">
+    <div className="flex items-center justify-between gap-3 border-t py-3 text-base">
       <div className="flex items-center gap-2 font-medium">
-        <span className={active ? "text-primary" : "text-muted-foreground"}>
-          {active ? (
-            <Award className="size-6" />
-          ) : (
-            <CircleDot className="size-6" />
-          )}
-        </span>
+        <Image
+          src={iconSrc}
+          alt=""
+          width={32}
+          height={32}
+          className={active ? "opacity-100" : "opacity-30"}
+        />
         <span>{label}</span>
       </div>
       <span className="text-muted-foreground">{money(amount)}</span>
@@ -95,7 +97,7 @@ export function SalesSellerDashboard({
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
         <Card>
           <CardHeader>
-            <CardTitle>Fechamentos do Mês</CardTitle>
+            <CardTitle className="text-lg">Fechamentos do Mês</CardTitle>
           </CardHeader>
           <CardContent>
             <SalesClosingBarChart data={closingChartData} />
@@ -104,7 +106,7 @@ export function SalesSellerDashboard({
 
         <Card>
           <CardHeader>
-            <CardTitle>Minha Meta</CardTitle>
+            <CardTitle className="text-lg">Minha Meta</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-5">
             <div className="grid gap-3">
@@ -112,7 +114,7 @@ export function SalesSellerDashboard({
                 <p className="text-2xl font-semibold">
                   {money(metric.totalClosed)}
                 </p>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-base font-medium text-muted-foreground">
                   {target
                     ? `${percent(progress)} de ${money(target)}`
                     : "Sem meta"}
@@ -130,6 +132,7 @@ export function SalesSellerDashboard({
               <GoalLevel
                 label="Meta Base"
                 amount={metric.goalBase}
+                iconSrc="/medal-bronze.svg"
                 active={
                   metric.totalClosed >= metric.goalBase && !!metric.goalBase
                 }
@@ -137,6 +140,7 @@ export function SalesSellerDashboard({
               <GoalLevel
                 label="Meta Média"
                 amount={metric.goalMid}
+                iconSrc="/medal-silver.svg"
                 active={
                   metric.totalClosed >= metric.goalMid && !!metric.goalMid
                 }
@@ -144,6 +148,7 @@ export function SalesSellerDashboard({
               <GoalLevel
                 label="Meta Super"
                 amount={metric.goalSuper}
+                iconSrc="/medal-gold.svg"
                 active={
                   metric.totalClosed >= metric.goalSuper && !!metric.goalSuper
                 }

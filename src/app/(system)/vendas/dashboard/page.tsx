@@ -7,10 +7,7 @@ import type {
   SalesClosingChartItem,
   SalesDashboardMetric,
 } from "../components/sales-dashboard-types";
-import {
-  discountedPaymentMethods,
-  GENERAL_GOAL_SELLER,
-} from "@/lib/domain";
+import { discountedPaymentMethods, GENERAL_GOAL_SELLER } from "@/lib/domain";
 import { parseMonth, toDecimalNumber } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
@@ -206,7 +203,7 @@ export default async function SalesDashboardPage({
     <div className="grid gap-6">
       <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Indicadores</h1>
+          <h1 className="text-2xl font-semibold">Indicadores</h1>
           <p className="text-base text-muted-foreground">Comercial Mensal</p>
         </div>
         <form className="flex items-center gap-2">
@@ -216,7 +213,10 @@ export default async function SalesDashboardPage({
             defaultValue={month.key}
             className="w-[180px]"
           />
-          <Button type="submit">
+          <Button
+            type="submit"
+            className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+          >
             <Funnel />
             Filtrar
           </Button>
