@@ -1,11 +1,17 @@
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { money, percent } from "@/lib/format";
 import { SalesClosingBarChart } from "./sales-closing-bar-chart";
 import type {
   SalesClosingChartItem,
   SalesDashboardMetric,
 } from "./sales-dashboard-types";
+
+type MetricHelper = {
+  label: string;
+  tone: "positive" | "negative" | "neutral";
+};
 
 function SellerMetricCard({
   title,
@@ -14,14 +20,23 @@ function SellerMetricCard({
 }: {
   title: string;
   value: string;
-  helper: string;
+  helper: MetricHelper;
 }) {
   return (
     <Card size="sm" className="border-border/70 shadow-sm">
       <CardContent className="grid gap-2">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p className="text-base font-medium text-muted-foreground">{title}</p>
         <p className="text-2xl font-semibold tracking-tight">{value}</p>
-        <p className="text-xs font-medium text-muted-foreground">{helper}</p>
+        <p
+          className={cn(
+            "text-sm font-medium",
+            helper.tone === "positive" && "text-emerald-600",
+            helper.tone === "negative" && "text-destructive",
+            helper.tone === "neutral" && "text-muted-foreground",
+          )}
+        >
+          {helper.label}
+        </p>
       </CardContent>
     </Card>
   );
@@ -57,10 +72,12 @@ function GoalLevel({
 
 export function SalesSellerDashboard({
   metric,
+  previousMetric,
   hasOrders,
   closingChartData,
 }: {
   metric: SalesDashboardMetric;
+  previousMetric: SalesDashboardMetric;
   hasOrders: boolean;
   closingChartData: SalesClosingChartItem[];
 }) {
@@ -69,40 +86,96 @@ export function SalesSellerDashboard({
     ? Math.min((metric.totalClosed / target) * 100, 100)
     : 0;
 
+  function countDelta(current: number, previous: number): MetricHelper {
+    const difference = current - previous;
+    if (difference === 0) {
+      return { label: "Igual ao mês anterior", tone: "neutral" };
+    }
+
+    return {
+      label: `${difference > 0 ? "+" : ""}${difference} vs mês anterior`,
+      tone: difference > 0 ? "positive" : "negative",
+    } satisfies MetricHelper;
+  }
+
+  function percentDelta(current: number, previous: number): MetricHelper {
+    if (!previous) {
+      return { label: "Sem base anterior", tone: "neutral" };
+    }
+
+    const difference = ((current - previous) / previous) * 100;
+    return {
+      label: `${percent(difference)} vs mês anterior`,
+      tone:
+        difference === 0
+          ? "neutral"
+          : difference > 0
+            ? "positive"
+            : "negative",
+    } satisfies MetricHelper;
+  }
+
+  function pointDelta(current: number, previous: number): MetricHelper {
+    const difference = current - previous;
+    if (difference === 0) {
+      return { label: "Igual ao mês anterior", tone: "neutral" };
+    }
+
+    return {
+      label: `${difference > 0 ? "+" : ""}${percent(difference)} p.p. vs mês anterior`,
+      tone: difference > 0 ? "positive" : "negative",
+    } satisfies MetricHelper;
+  }
+
   return (
     <>
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <SellerMetricCard
           title="Total Orçado"
           value={money(metric.totalQuoted)}
-          helper={`${metric.quoteCount} orçamentos no mês`}
+          helper={percentDelta(metric.totalQuoted, previousMetric.totalQuoted)}
         />
         <SellerMetricCard
           title="Total Fechado"
           value={money(metric.totalClosed)}
-          helper={`${metric.saleCount} vendas fechadas`}
+          helper={percentDelta(metric.totalClosed, previousMetric.totalClosed)}
         />
         <SellerMetricCard
           title="Conversão"
           value={percent(metric.conversionCount)}
-          helper={`${percent(metric.conversionValue)} em valor`}
+          helper={pointDelta(
+            metric.conversionCount,
+            previousMetric.conversionCount,
+          )}
         />
         <SellerMetricCard
           title="Ticket Médio"
           value={money(metric.ticket)}
-          helper="Média por venda fechada"
+          helper={percentDelta(metric.ticket, previousMetric.ticket)}
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Fechamentos do Mês</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SalesClosingBarChart data={closingChartData} />
-          </CardContent>
-        </Card>
+      <section className="grid gap-4 xl:grid-cols-[minmax(280px,0.45fr)_minmax(0,1fr)]">
+        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-1">
+          <SellerMetricCard
+            title="Orçamentos"
+            value={String(metric.quoteCount)}
+            helper={countDelta(metric.quoteCount, previousMetric.quoteCount)}
+          />
+          <SellerMetricCard
+            title="Vendas Fechadas"
+            value={String(metric.saleCount)}
+            helper={countDelta(metric.saleCount, previousMetric.saleCount)}
+          />
+          <SellerMetricCard
+            title="Conversão R$"
+            value={percent(metric.conversionValue)}
+            helper={pointDelta(
+              metric.conversionValue,
+              previousMetric.conversionValue,
+            )}
+          />
+        </div>
 
         <Card>
           <CardHeader>
@@ -157,6 +230,17 @@ export function SalesSellerDashboard({
           </CardContent>
         </Card>
       </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">
+            Fechamentos dos Últimos 7 Meses
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SalesClosingBarChart data={closingChartData} />
+        </CardContent>
+      </Card>
 
       {!hasOrders ? (
         <Card>

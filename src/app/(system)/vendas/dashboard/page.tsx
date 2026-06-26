@@ -131,9 +131,13 @@ export default async function SalesDashboardPage({
   const month = parseMonth(params.month);
   const isAdmin = user.role === UserRole.ADMIN;
   const sellerKey = user.name.toUpperCase();
+  const previousMonth = {
+    start: addUtcMonths(month.start, -1),
+    end: month.start,
+  };
   const chartStart = addUtcMonths(month.start, -6);
 
-  const [orders, goals, closingChartOrders] = await Promise.all([
+  const [orders, goals, closingChartOrders, previousOrders] = await Promise.all([
     prisma.saleOrder.findMany({
       where: {
         AND: [
@@ -175,6 +179,37 @@ export default async function SalesDashboardPage({
           },
           orderBy: { closedAt: "asc" },
         }),
+    isAdmin
+      ? Promise.resolve([])
+      : prisma.saleOrder.findMany({
+          where: {
+            AND: [
+              {
+                OR: [
+                  {
+                    quoteDate: {
+                      gte: previousMonth.start,
+                      lt: previousMonth.end,
+                    },
+                  },
+                  {
+                    closedAt: {
+                      gte: previousMonth.start,
+                      lt: previousMonth.end,
+                    },
+                  },
+                ],
+              },
+              {
+                sellerName: {
+                  equals: user.name,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+          orderBy: { sellerName: "asc" },
+        }),
   ]);
 
   const goalsBySeller = new Map(goals.map((goal) => [goal.sellerName, goal]));
@@ -198,9 +233,15 @@ export default async function SalesDashboardPage({
     ),
   );
   const closingChartData = buildClosingChartData(closingChartOrders, month);
+  const previousMetric = buildMetric(
+    user.name,
+    previousOrders,
+    previousMonth,
+    goalsBySeller.get(sellerKey),
+  );
 
   return (
-    <div className="grid gap-6">
+    <div className="mx-auto grid w-full max-w-7xl gap-6 px-4">
       <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Indicadores</h1>
@@ -231,6 +272,7 @@ export default async function SalesDashboardPage({
       ) : (
         <SalesSellerDashboard
           metric={generalMetric}
+          previousMetric={previousMetric}
           hasOrders={orders.length > 0}
           closingChartData={closingChartData}
         />
