@@ -12,13 +12,6 @@ import {
 import { FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   RadioGroup,
   SelectField,
   FormField,
@@ -27,7 +20,6 @@ import {
   budgetOriginLabels,
   budgetOriginOptions,
   commercialStatusLabels,
-  commercialStatusOptions,
   customerOriginLabels,
   customerOriginOptions,
   logisticsTypeLabels,
@@ -45,6 +37,7 @@ import { requireRole } from "@/lib/permissions";
 import { saveSaleOrder } from "../actions";
 import { Textarea } from "@/components/ui/textarea";
 import { SaleValuesCard } from "./components/sale-values-card";
+import { SaleGeneralInfoCard } from "./components/sale-general-info-card";
 
 const cardTitleClass = "text-lg";
 const formTextClass =
@@ -112,7 +105,11 @@ export default async function SalesPage({
                 </Link>
               </Button>
             ) : null}
-            <Button type="submit" form="sale-order-form" className="text-base">
+            <Button
+              type="submit"
+              form="sale-order-form"
+              className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+            >
               {editingOrder ? <Save /> : <Plus />}
               {editingOrder ? "Salvar Alterações" : "Criar Ordem"}
             </Button>
@@ -126,57 +123,13 @@ export default async function SalesPage({
           className={`grid gap-4 lg:grid-cols-12 ${formTextClass}`}
         >
           <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
-
-          <Card className={`lg:col-span-3`}>
-            <CardHeader>
-              <CardTitle className={cardTitleClass}>
-                Informações Gerais
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <FormField label="Vendedor:">
-                <Select
-                  name="sellerName"
-                  required
-                  defaultValue={editingOrder?.sellerName}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sellers.map((seller) => (
-                      <SelectItem key={seller.id} value={seller.name}>
-                        {seller.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <FormField label="Data do Orçamento:">
-                <Input
-                  type="date"
-                  name="quoteDate"
-                  required
-                  defaultValue={dateInputValue(editingOrder?.quoteDate)}
-                />
-              </FormField>
-              <RadioGroup
-                name="commercialStatus"
-                label="Status:"
-                options={commercialStatusOptions}
-                labels={commercialStatusLabels}
-                defaultValue={editingOrder?.commercialStatus}
-                columns="grid-cols-2"
-              />
-              <FormField label="Data do Fechamento:">
-                <Input
-                  type="date"
-                  name="closedAt"
-                  defaultValue={dateInputValue(editingOrder?.closedAt)}
-                />
-              </FormField>
-            </CardContent>
-          </Card>
+          <SaleGeneralInfoCard
+            sellers={sellers}
+            sellerName={editingOrder?.sellerName}
+            quoteDate={editingOrder?.quoteDate}
+            commercialStatus={editingOrder?.commercialStatus}
+            closedAt={editingOrder?.closedAt}
+          />
           <SaleValuesCard
             quotedAmount={editingOrder?.quotedAmount?.toString() ?? ""}
             closedAmount={editingOrder?.closedAmount?.toString() ?? ""}

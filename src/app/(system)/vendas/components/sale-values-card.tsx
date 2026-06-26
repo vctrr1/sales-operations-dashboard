@@ -105,7 +105,7 @@ export function SaleValuesCard({
         </FormField>
         <div className="grid gap-2">
           <Button
-            className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+            className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
             type="button"
             variant="default"
             onClick={calculateDiscount}
