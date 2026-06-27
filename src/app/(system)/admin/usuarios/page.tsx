@@ -32,7 +32,7 @@ export default async function UsersPage() {
     <div className="mx-auto grid w-full max-w-7xl gap-6 px-4">
       <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Usuários</h1>
+          <h1 className="text-2xl">Usuários</h1>
           <p className="text-base text-muted-foreground">Perfis de Acesso</p>
         </div>
       </section>

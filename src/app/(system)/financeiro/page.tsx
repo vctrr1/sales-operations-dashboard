@@ -91,7 +91,7 @@ export default async function FinancePage({
     <div className="grid gap-6 max-w-7xl mx-auto px-4">
       <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Financeiro</h1>
+          <h1 className="text-2xl">Financeiro</h1>
           <p className="text-base text-muted-foreground">
             Resumo Diário e Metas
           </p>

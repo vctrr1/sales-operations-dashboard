@@ -61,8 +61,8 @@ export default async function AssemblyPage() {
   return (
     <div className="grid gap-5">
       <section>
-        <h1 className="text-xl font-semibold">Programação de montagem</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-2xl">Programação de Montagem</h1>
+        <p className="text-base text-muted-foreground">
           Ordens fechadas pelo comercial
         </p>
       </section>

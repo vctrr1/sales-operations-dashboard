@@ -137,80 +137,82 @@ export default async function SalesDashboardPage({
   };
   const chartStart = addUtcMonths(month.start, -6);
 
-  const [orders, goals, closingChartOrders, previousOrders] = await Promise.all([
-    prisma.saleOrder.findMany({
-      where: {
-        AND: [
-          {
-            OR: [
-              { quoteDate: { gte: month.start, lt: month.end } },
-              { closedAt: { gte: month.start, lt: month.end } },
-            ],
-          },
-          ...(isAdmin
-            ? []
-            : [
+  const [orders, goals, closingChartOrders, previousOrders] = await Promise.all(
+    [
+      prisma.saleOrder.findMany({
+        where: {
+          AND: [
+            {
+              OR: [
+                { quoteDate: { gte: month.start, lt: month.end } },
+                { closedAt: { gte: month.start, lt: month.end } },
+              ],
+            },
+            ...(isAdmin
+              ? []
+              : [
+                  {
+                    sellerName: {
+                      equals: user.name,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                ]),
+          ],
+        },
+        orderBy: { sellerName: "asc" },
+      }),
+      prisma.monthlyGoal.findMany({
+        where: isAdmin
+          ? { month: month.start }
+          : { month: month.start, sellerName: sellerKey },
+      }),
+      isAdmin
+        ? Promise.resolve([])
+        : prisma.saleOrder.findMany({
+            where: {
+              commercialStatus: "CLOSED",
+              closedAt: { gte: chartStart, lt: month.end },
+              sellerName: {
+                equals: user.name,
+                mode: "insensitive",
+              },
+            },
+            orderBy: { closedAt: "asc" },
+          }),
+      isAdmin
+        ? Promise.resolve([])
+        : prisma.saleOrder.findMany({
+            where: {
+              AND: [
+                {
+                  OR: [
+                    {
+                      quoteDate: {
+                        gte: previousMonth.start,
+                        lt: previousMonth.end,
+                      },
+                    },
+                    {
+                      closedAt: {
+                        gte: previousMonth.start,
+                        lt: previousMonth.end,
+                      },
+                    },
+                  ],
+                },
                 {
                   sellerName: {
                     equals: user.name,
-                    mode: "insensitive" as const,
+                    mode: "insensitive",
                   },
                 },
-              ]),
-        ],
-      },
-      orderBy: { sellerName: "asc" },
-    }),
-    prisma.monthlyGoal.findMany({
-      where: isAdmin
-        ? { month: month.start }
-        : { month: month.start, sellerName: sellerKey },
-    }),
-    isAdmin
-      ? Promise.resolve([])
-      : prisma.saleOrder.findMany({
-          where: {
-            commercialStatus: "CLOSED",
-            closedAt: { gte: chartStart, lt: month.end },
-            sellerName: {
-              equals: user.name,
-              mode: "insensitive",
+              ],
             },
-          },
-          orderBy: { closedAt: "asc" },
-        }),
-    isAdmin
-      ? Promise.resolve([])
-      : prisma.saleOrder.findMany({
-          where: {
-            AND: [
-              {
-                OR: [
-                  {
-                    quoteDate: {
-                      gte: previousMonth.start,
-                      lt: previousMonth.end,
-                    },
-                  },
-                  {
-                    closedAt: {
-                      gte: previousMonth.start,
-                      lt: previousMonth.end,
-                    },
-                  },
-                ],
-              },
-              {
-                sellerName: {
-                  equals: user.name,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          },
-          orderBy: { sellerName: "asc" },
-        }),
-  ]);
+            orderBy: { sellerName: "asc" },
+          }),
+    ],
+  );
 
   const goalsBySeller = new Map(goals.map((goal) => [goal.sellerName, goal]));
   const sellers = Array.from(
@@ -244,7 +246,7 @@ export default async function SalesDashboardPage({
     <div className="mx-auto grid w-full max-w-7xl gap-6 px-4">
       <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Indicadores</h1>
+          <h1 className="text-2xl">Indicadores</h1>
           <p className="text-base text-muted-foreground">Comercial Mensal</p>
         </div>
         <form className="flex items-center gap-2">

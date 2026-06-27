@@ -89,7 +89,7 @@ export default async function SalesPage({
       <section className="grid gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Vendas</h1>
+            <h1 className="text-2xl">Vendas</h1>
             <p className="text-base text-muted-foreground">
               {editingOrder
                 ? `Editando ordem ${editingOrder.orderNumber}`
