@@ -327,7 +327,7 @@ export default async function SalesPage({
               type="month"
               name="month"
               defaultValue={month.key}
-              className="w-[180px] text-base md:text-base"
+              className="w-[150px] text-base md:text-base"
             />
             <Button
               type="submit"

@@ -254,11 +254,11 @@ export default async function SalesDashboardPage({
             type="month"
             name="month"
             defaultValue={month.key}
-            className="w-[180px]"
+            className="w-[150px] text-base md:text-base"
           />
           <Button
             type="submit"
-            className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+            className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
           >
             <Funnel />
             Filtrar
