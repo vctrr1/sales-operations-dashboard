@@ -1,4 +1,4 @@
-import { Save } from "lucide-react";
+import { Funnel, Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,14 +30,19 @@ import { saveMonthlyGoal } from "../actions";
 type SearchParams = Promise<{ date?: string; month?: string }>;
 
 function startOfUtcDay(date: string | undefined) {
-  const source = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : localDateInputValue();
+  const source =
+    date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : localDateInputValue();
   const start = new Date(`${source}T00:00:00.000Z`);
   const end = new Date(start);
   end.setUTCDate(end.getUTCDate() + 1);
   return { key: source, start, end };
 }
 
-export default async function FinancePage({ searchParams }: { searchParams: SearchParams }) {
+export default async function FinancePage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   await requireRole([UserRole.ADMIN]);
   const params = await searchParams;
   const day = startOfUtcDay(params.date);
@@ -92,7 +97,11 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
         <form className="grid gap-2 md:grid-cols-[180px_180px_auto]">
           <Input type="date" name="date" defaultValue={day.key} />
           <Input type="month" name="month" defaultValue={month.key} />
-          <Button type="submit" variant="outline">
+          <Button
+            type="submit"
+            className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+          >
+            <Funnel />
             Filtrar
           </Button>
         </form>
@@ -120,12 +129,22 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
             <tbody>
               {dailyOrders.map((order) => (
                 <tr key={order.id} className="border-b last:border-0 align-top">
-                  <td className="py-3 pr-3 font-medium">#{order.saleOrder.orderNumber}</td>
+                  <td className="py-3 pr-3 font-medium">
+                    #{order.saleOrder.orderNumber}
+                  </td>
                   <td className="py-3 pr-3">{order.saleOrder.customerName}</td>
-                  <td className="py-3 pr-3">{logisticsTypeLabels[order.saleOrder.logisticsType]}</td>
-                  <td className="py-3 pr-3">{assemblyStatusLabels[order.status]}</td>
-                  <td className="py-3 pr-3">{priorityLabels[order.priority]}</td>
-                  <td className="py-3 pr-3">{money(order.saleOrder.closedAmount)}</td>
+                  <td className="py-3 pr-3">
+                    {logisticsTypeLabels[order.saleOrder.logisticsType]}
+                  </td>
+                  <td className="py-3 pr-3">
+                    {assemblyStatusLabels[order.status]}
+                  </td>
+                  <td className="py-3 pr-3">
+                    {priorityLabels[order.priority]}
+                  </td>
+                  <td className="py-3 pr-3">
+                    {money(order.saleOrder.closedAmount)}
+                  </td>
                   <td className="py-3 pr-3">
                     {order.saleOrder.items.map((item) => (
                       <div key={item.id}>
@@ -133,7 +152,9 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
                       </div>
                     ))}
                   </td>
-                  <td className="py-3 pr-3">{displayDate(order.scheduledDate ?? order.requestedAt)}</td>
+                  <td className="py-3 pr-3">
+                    {displayDate(order.scheduledDate ?? order.requestedAt)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -187,8 +208,11 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
                     defaultValue={goal?.superAmount?.toString() ?? "0"}
                   />
                 </Field>
-                <div className="flex items-end">
-                  <Button type="submit" className="w-full">
+                <div className="mt-6.5">
+                  <Button
+                    type="submit"
+                    className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+                  >
                     <Save />
                     Salvar
                   </Button>

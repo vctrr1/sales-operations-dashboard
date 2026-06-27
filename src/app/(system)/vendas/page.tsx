@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Ban, Edit, Plus, Save } from "lucide-react";
+import { Ban, Edit, Funnel, Plus, Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import {
@@ -329,7 +329,11 @@ export default async function SalesPage({
               defaultValue={month.key}
               className="w-[180px] text-base md:text-base"
             />
-            <Button type="submit" variant="outline" className="text-base">
+            <Button
+              type="submit"
+              className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+            >
+              <Funnel />
               Filtrar
             </Button>
           </form>

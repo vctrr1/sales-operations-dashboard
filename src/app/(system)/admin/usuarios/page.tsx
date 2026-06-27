@@ -65,11 +65,11 @@ export default async function UsersPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                        {roleOptions.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {roleLabels[role]}
-                          </SelectItem>
-                        ))}
+                          {roleOptions.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {roleLabels[role]}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </form>
@@ -78,7 +78,11 @@ export default async function UsersPage() {
                     {new Intl.DateTimeFormat("pt-BR").format(user.createdAt)}
                   </td>
                   <td className="py-3 pr-3 text-right">
-                    <Button form={`role-${user.id}`} type="submit" size="sm">
+                    <Button
+                      type="submit"
+                      form={`role-${user.id}`}
+                      className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+                    >
                       <Save />
                       Salvar
                     </Button>
