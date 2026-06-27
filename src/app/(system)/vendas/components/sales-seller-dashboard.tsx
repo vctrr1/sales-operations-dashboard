@@ -107,11 +107,7 @@ export function SalesSellerDashboard({
     return {
       label: `${percent(difference)} vs mês anterior`,
       tone:
-        difference === 0
-          ? "neutral"
-          : difference > 0
-            ? "positive"
-            : "negative",
+        difference === 0 ? "neutral" : difference > 0 ? "positive" : "negative",
     } satisfies MetricHelper;
   }
 
@@ -141,7 +137,7 @@ export function SalesSellerDashboard({
           helper={percentDelta(metric.totalClosed, previousMetric.totalClosed)}
         />
         <SellerMetricCard
-          title="Conversão"
+          title="Conversão Nº"
           value={percent(metric.conversionCount)}
           helper={pointDelta(
             metric.conversionCount,
