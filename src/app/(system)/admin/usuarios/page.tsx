@@ -1,13 +1,7 @@
 import { Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -35,15 +29,17 @@ export default async function UsersPage() {
   });
 
   return (
-    <div className="grid gap-5">
+    <div className="mx-auto grid w-full max-w-7xl gap-6 px-4">
+      <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Usuários</h1>
+          <p className="text-base text-muted-foreground">Perfis de Acesso</p>
+        </div>
+      </section>
       <Card>
-        <CardHeader>
-          <CardTitle>Usuários</CardTitle>
-          <CardDescription>Perfis de acesso</CardDescription>
-        </CardHeader>
         <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b text-xs uppercase text-muted-foreground">
+          <table className="w-full min-w-[720px] text-left text-base">
+            <thead className="border-b text-sm uppercase text-muted-foreground">
               <tr>
                 <th className="py-2 pr-3">Nome</th>
                 <th className="py-2 pr-3">Email</th>
@@ -81,7 +77,7 @@ export default async function UsersPage() {
                     <Button
                       type="submit"
                       form={`role-${user.id}`}
-                      className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+                      className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
                     >
                       <Save />
                       Salvar

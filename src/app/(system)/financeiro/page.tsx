@@ -88,18 +88,30 @@ export default async function FinancePage({
   ];
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 max-w-7xl mx-auto px-4">
       <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Financeiro</h1>
-          <p className="text-sm text-muted-foreground">Resumo diário e metas</p>
+          <h1 className="text-2xl font-semibold">Financeiro</h1>
+          <p className="text-base text-muted-foreground">
+            Resumo Diário e Metas
+          </p>
         </div>
         <form className="grid gap-2 md:grid-cols-[180px_180px_auto]">
-          <Input type="date" name="date" defaultValue={day.key} />
-          <Input type="month" name="month" defaultValue={month.key} />
+          <Input
+            type="date"
+            name="date"
+            defaultValue={day.key}
+            className="text-base md:text-base"
+          />
+          <Input
+            type="month"
+            name="month"
+            defaultValue={month.key}
+            className="text-base md:text-base"
+          />
           <Button
             type="submit"
-            className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+            className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
           >
             <Funnel />
             Filtrar
@@ -109,12 +121,12 @@ export default async function FinancePage({
 
       <Card>
         <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
-          <CardTitle>Ordens do dia</CardTitle>
-          <CardDescription>{dailyOrders.length} registros</CardDescription>
+          <CardTitle className="text-lg">Ordens do dia</CardTitle>
+          <CardDescription>{dailyOrders.length} Registros</CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-sm">
-            <thead className="border-b text-xs uppercase text-muted-foreground">
+          <table className="w-full min-w-[920px] text-left text-base">
+            <thead className="border-b text-sm uppercase text-muted-foreground">
               <tr>
                 <th className="py-2 pr-3">Ordem</th>
                 <th className="py-2 pr-3">Cliente</th>
@@ -164,7 +176,7 @@ export default async function FinancePage({
 
       <Card>
         <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
-          <CardTitle>Metas mensais</CardTitle>
+          <CardTitle className="text-lg">Metas mensais</CardTitle>
           <CardDescription>{month.key}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
@@ -179,39 +191,42 @@ export default async function FinancePage({
                 <input type="hidden" name="month" value={month.key} />
                 <input type="hidden" name="sellerName" value={seller.goalKey} />
                 <Field>
-                  <FieldLabel>Vendedor</FieldLabel>
-                  <div className="flex h-9 items-center rounded-md border border-input bg-muted/40 px-3 text-sm">
+                  <FieldLabel className="text-base">Vendedor</FieldLabel>
+                  <div className="flex h-9 items-center rounded-md border border-input bg-muted/40 px-3 text-base">
                     {seller.label}
                   </div>
                 </Field>
                 <Field>
-                  <FieldLabel>Meta base</FieldLabel>
+                  <FieldLabel className="text-base">Meta base</FieldLabel>
                   <Input
                     name="baseAmount"
                     inputMode="decimal"
+                    className="text-base md:text-base"
                     defaultValue={goal?.baseAmount?.toString() ?? "0"}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Meta média</FieldLabel>
+                  <FieldLabel className="text-base">Meta média</FieldLabel>
                   <Input
                     name="midAmount"
                     inputMode="decimal"
+                    className="text-base md:text-base"
                     defaultValue={goal?.midAmount?.toString() ?? "0"}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Super meta</FieldLabel>
+                  <FieldLabel className="text-base">Super meta</FieldLabel>
                   <Input
                     name="superAmount"
                     inputMode="decimal"
+                    className="text-base md:text-base"
                     defaultValue={goal?.superAmount?.toString() ?? "0"}
                   />
                 </Field>
                 <div className="mt-6.5">
                   <Button
                     type="submit"
-                    className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+                    className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50 text-base"
                   >
                     <Save />
                     Salvar
