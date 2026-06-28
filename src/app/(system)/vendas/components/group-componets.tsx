@@ -26,7 +26,7 @@ export function RadioGroup<T extends string>({
 
   return (
     <fieldset className="grid gap-2">
-      <legend className="text-base leading-snug text-muted-foreground">
+      <legend className="text-base leading-snug text-muted-foreground select-none">
         {label}
       </legend>
       <div className={`grid gap-2 ${columns}`}>
