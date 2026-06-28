@@ -35,12 +35,14 @@ type SaleValuesCardProps = {
   quotedAmount?: string;
   closedAmount?: string;
   discountPercent?: string;
+  discountEnabled?: boolean;
 };
 
 export function SaleValuesCard({
   quotedAmount = "",
   closedAmount = "",
   discountPercent = "",
+  discountEnabled = true,
 }: SaleValuesCardProps) {
   const [quotedValue, setQuotedValue] = useState(() =>
     formatInitialMoneyValue(quotedAmount),
@@ -52,6 +54,11 @@ export function SaleValuesCard({
   const [message, setMessage] = useState<string | null>(null);
 
   function calculateDiscount() {
+    if (!discountEnabled) {
+      setMessage("Desconto disponível apenas para pagamento à vista.");
+      return;
+    }
+
     const quoted = parseBrazilianNumber(quotedValue);
     const discount = discountValue.trim()
       ? parseBrazilianNumber(discountValue)
@@ -92,6 +99,7 @@ export function SaleValuesCard({
             name="discountPercent"
             inputMode="decimal"
             value={discountValue}
+            disabled={!discountEnabled}
             onChange={(event) => setDiscountValue(event.target.value)}
           />
         </FormField>
@@ -108,11 +116,18 @@ export function SaleValuesCard({
             className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
             type="button"
             variant="default"
+            disabled={!discountEnabled}
             onClick={calculateDiscount}
           >
             <Calculator />
             Calcular Desconto
           </Button>
+          {!discountEnabled ? (
+            <p className="text-sm text-muted-foreground text-center">
+              Desconto disponível apenas para Pix, transferência, boleto ou
+              espécie.
+            </p>
+          ) : null}
           {message ? (
             <p className="text-sm text-destructive" role="alert">
               {message}

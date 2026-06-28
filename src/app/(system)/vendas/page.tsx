@@ -24,8 +24,6 @@ import {
   customerOriginOptions,
   logisticsTypeLabels,
   logisticsTypeOptions,
-  paymentMethodLabels,
-  paymentMethodOptions,
   priorityLabels,
   priorityOptions,
   productCategoryLabels,
@@ -42,8 +40,8 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { saveSaleOrder } from "../actions";
 import { Textarea } from "@/components/ui/textarea";
-import { SaleValuesCard } from "./components/sale-values-card";
 import { SaleGeneralInfoCard } from "./components/sale-general-info-card";
+import { SalePaymentValuesSection } from "./components/sale-payment-values-section";
 
 const cardTitleClass = "text-lg";
 const formTextClass =
@@ -136,25 +134,12 @@ export default async function SalesPage({
             commercialStatus={editingOrder?.commercialStatus}
             closedAt={editingOrder?.closedAt}
           />
-          <SaleValuesCard
+          <SalePaymentValuesSection
             quotedAmount={editingOrder?.quotedAmount?.toString() ?? ""}
             closedAmount={editingOrder?.closedAmount?.toString() ?? ""}
             discountPercent={editingOrder?.discountPercent?.toString() ?? ""}
+            paymentMethod={editingOrder?.paymentMethod}
           />
-          <Card className={`lg:col-span-3`}>
-            <CardHeader>
-              <CardTitle className={cardTitleClass}>Pagamento</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup
-                name="paymentMethod"
-                label="Forma de Pagamento:"
-                options={paymentMethodOptions}
-                labels={paymentMethodLabels}
-                defaultValue={editingOrder?.paymentMethod ?? undefined}
-              />
-            </CardContent>
-          </Card>
 
           <Card className={` lg:col-span-3`}>
             <CardHeader>

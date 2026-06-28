@@ -85,6 +85,7 @@ export const customerOriginOptions = Object.values(CustomerOrigin);
 export const budgetOriginOptions = Object.values(BudgetOrigin);
 
 export const discountedPaymentMethods = new Set<PaymentMethod>([
+  PaymentMethod.BOLETO,
   PaymentMethod.CASH,
   PaymentMethod.PIX,
   PaymentMethod.TRANSFER,

@@ -13,6 +13,8 @@ export function RadioGroup<T extends string>({
   options,
   labels,
   defaultValue,
+  value,
+  onValueChange,
   columns = "sm:grid-cols-2",
 }: {
   name: string;
@@ -20,9 +22,12 @@ export function RadioGroup<T extends string>({
   options: T[];
   labels: Record<T, string>;
   defaultValue?: T;
+  value?: T;
+  onValueChange?: (value: T) => void;
   columns?: string;
 }) {
-  const checkedValue = defaultValue ?? options[0];
+  const checkedValue = value ?? defaultValue ?? options[0];
+  const isControlled = value !== undefined;
 
   return (
     <fieldset className="grid gap-2">
@@ -39,7 +44,12 @@ export function RadioGroup<T extends string>({
               type="radio"
               name={name}
               value={option}
-              defaultChecked={option === checkedValue}
+              {...(isControlled
+                ? {
+                    checked: option === checkedValue,
+                    onChange: () => onValueChange?.(option),
+                  }
+                : { defaultChecked: option === checkedValue })}
               className="size-4 accent-primary"
             />
             <span className="leading-snug">{labels[option]}</span>

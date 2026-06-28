@@ -13,7 +13,7 @@ import {
   ProductCategory,
   UserRole,
 } from "@/generated/prisma/enums";
-import { GENERAL_GOAL_SELLER } from "@/lib/domain";
+import { discountedPaymentMethods, GENERAL_GOAL_SELLER } from "@/lib/domain";
 import {
   parseDateField,
   parseMoneyField,
@@ -65,6 +65,10 @@ export async function saveSaleOrder(formData: FormData) {
   const quoteDate = parseDateField(formData.get("quoteDate")) ?? new Date();
   const closedAt = parseDateField(formData.get("closedAt"));
   const items = parseItems(formData);
+  const paymentMethod =
+    commercialStatus === CommercialStatus.CLOSED
+      ? enumValue(PaymentMethod, formData.get("paymentMethod"), PaymentMethod.CARD)
+      : null;
 
   const data = {
     sellerName: parseRequiredText(formData.get("sellerName"), "vendedor"),
@@ -76,13 +80,13 @@ export async function saveSaleOrder(formData: FormData) {
       commercialStatus === CommercialStatus.CLOSED
         ? parseMoneyField(formData.get("closedAmount"), parseMoneyField(formData.get("quotedAmount")))
         : null,
-    discountPercent: parseOptionalText(formData.get("discountPercent"))
-      ? parseMoneyField(formData.get("discountPercent"))
-      : null,
-    paymentMethod:
-      commercialStatus === CommercialStatus.CLOSED
-        ? enumValue(PaymentMethod, formData.get("paymentMethod"), PaymentMethod.CARD)
+    discountPercent:
+      paymentMethod &&
+      discountedPaymentMethods.has(paymentMethod) &&
+      parseOptionalText(formData.get("discountPercent"))
+        ? parseMoneyField(formData.get("discountPercent"))
         : null,
+    paymentMethod,
     productCategory: enumValue(
       ProductCategory,
       formData.get("productCategory"),
