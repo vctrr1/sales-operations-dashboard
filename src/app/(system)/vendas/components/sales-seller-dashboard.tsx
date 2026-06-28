@@ -151,7 +151,7 @@ export function SalesSellerDashboard({
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(280px,0.45fr)_minmax(0,1fr)]">
+      <section className="grid gap-3 xl:grid-cols-[minmax(280px,0.45fr)_minmax(0,1fr)]">
         <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-1">
           <SellerMetricCard
             title="Orçamentos"

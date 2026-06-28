@@ -87,20 +87,20 @@ export function SaleValuesCard({
             onChange={(event) => setQuotedValue(event.target.value)}
           />
         </FormField>
-        <FormField label="Valor Fechado:">
-          <Input
-            name="closedAmount"
-            inputMode="decimal"
-            value={closedValue}
-            onChange={(event) => setClosedValue(event.target.value)}
-          />
-        </FormField>
         <FormField label="Desconto (%):">
           <Input
             name="discountPercent"
             inputMode="decimal"
             value={discountValue}
             onChange={(event) => setDiscountValue(event.target.value)}
+          />
+        </FormField>
+        <FormField label="Valor Fechado:">
+          <Input
+            name="closedAmount"
+            inputMode="decimal"
+            value={closedValue}
+            onChange={(event) => setClosedValue(event.target.value)}
           />
         </FormField>
         <div className="grid gap-2">
