@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inconsolata } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
 const inconsolata = Inconsolata({ subsets: ["latin"], weight: ["500"] });
 
@@ -25,6 +26,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>
     </html>
