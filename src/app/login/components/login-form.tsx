@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { FcGoogle } from "react-icons/fc";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -32,7 +32,7 @@ export function LoginForm({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -108,7 +108,7 @@ export function LoginForm({
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      <Loader2Icon className="animate-spin size-4" />
+                      <Loader2Icon className="animate-spin size-5" />
                     ) : (
                       "Login"
                     )}

@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { FcGoogle } from "react-icons/fc";
 import { z } from "zod";
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,7 +40,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -67,9 +67,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             router.replace("/");
           },
           onError: (ctx) => {
-            toast.error(
-              ctx.error.message ?? "Não foi possível criar a conta.",
-            );
+            toast.error(ctx.error.message ?? "Não foi possível criar a conta.");
           },
         },
       );
@@ -147,7 +145,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      <Loader2Icon className="animate-spin size-4" />
+                      <Loader2Icon className="animate-spin size-5" />
                     ) : (
                       "Cadastrar-se"
                     )}
