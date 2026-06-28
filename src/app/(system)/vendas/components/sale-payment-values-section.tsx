@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { PaymentMethod } from "@/generated/prisma/enums";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   discountedPaymentMethods,
   paymentMethodLabels,
@@ -26,8 +32,7 @@ export function SalePaymentValuesSection({
 }: SalePaymentValuesSectionProps) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(paymentMethod ?? PaymentMethod.CARD);
-  const discountEnabled =
-    discountedPaymentMethods.has(selectedPaymentMethod);
+  const discountEnabled = discountedPaymentMethods.has(selectedPaymentMethod);
 
   return (
     <>
@@ -52,6 +57,14 @@ export function SalePaymentValuesSection({
             onValueChange={setSelectedPaymentMethod}
           />
         </CardContent>
+        <CardDescription>
+          {!discountEnabled ? (
+            <p className="text-sm text-muted-foreground text-center">
+              Desconto disponível apenas para Pix, transferência, boleto ou
+              espécie.
+            </p>
+          ) : null}
+        </CardDescription>
       </Card>
     </>
   );

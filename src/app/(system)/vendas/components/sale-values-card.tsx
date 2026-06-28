@@ -122,12 +122,6 @@ export function SaleValuesCard({
             <Calculator />
             Calcular Desconto
           </Button>
-          {!discountEnabled ? (
-            <p className="text-sm text-muted-foreground text-center">
-              Desconto disponível apenas para Pix, transferência, boleto ou
-              espécie.
-            </p>
-          ) : null}
           {message ? (
             <p className="text-sm text-destructive" role="alert">
               {message}
