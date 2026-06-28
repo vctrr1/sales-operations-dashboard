@@ -8,7 +8,7 @@ import type {
   SalesDashboardMetric,
 } from "../components/sales-dashboard-types";
 import { discountedPaymentMethods, GENERAL_GOAL_SELLER } from "@/lib/domain";
-import { parseMonth, toDecimalNumber } from "@/lib/format";
+import { displayMonth, parseMonth, toDecimalNumber } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { Funnel } from "lucide-react";
@@ -251,9 +251,11 @@ export default async function SalesDashboardPage({
         </div>
         <form className="flex items-center gap-2">
           <Input
-            type="month"
+            type="text"
             name="month"
-            defaultValue={month.key}
+            pattern="\d{2}-\d{4}"
+            placeholder="mm-aaaa"
+            defaultValue={displayMonth(month.key)}
             className="w-[150px] text-base md:text-base"
           />
           <Button

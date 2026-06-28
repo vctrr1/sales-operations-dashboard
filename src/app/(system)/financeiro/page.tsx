@@ -18,6 +18,7 @@ import {
 } from "@/lib/domain";
 import {
   displayDate,
+  displayMonth,
   localDateInputValue,
   money,
   monthInputValue,
@@ -104,9 +105,11 @@ export default async function FinancePage({
             className="text-base md:text-base"
           />
           <Input
-            type="month"
+            type="text"
             name="month"
-            defaultValue={month.key}
+            pattern="\d{2}-\d{4}"
+            placeholder="mm-aaaa"
+            defaultValue={displayMonth(month.key)}
             className="text-base md:text-base"
           />
           <Button
@@ -177,7 +180,7 @@ export default async function FinancePage({
       <Card>
         <CardHeader className="md:grid-cols-[1fr_auto] md:items-center">
           <CardTitle className="text-lg">Metas mensais</CardTitle>
-          <CardDescription>{month.key}</CardDescription>
+          <CardDescription>{displayMonth(month.key)}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
           {sellers.map((seller) => {

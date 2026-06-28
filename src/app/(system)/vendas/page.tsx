@@ -31,7 +31,13 @@ import {
   productCategoryLabels,
   productCategoryOptions,
 } from "@/lib/domain";
-import { dateInputValue, displayDate, money, parseMonth } from "@/lib/format";
+import {
+  dateInputValue,
+  displayDate,
+  displayMonth,
+  money,
+  parseMonth,
+} from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { saveSaleOrder } from "../actions";
@@ -324,9 +330,11 @@ export default async function SalesPage({
           </div>
           <form className="flex flex-wrap items-center gap-2">
             <Input
-              type="month"
+              type="text"
               name="month"
-              defaultValue={month.key}
+              pattern="\d{2}-\d{4}"
+              placeholder="mm-aaaa"
+              defaultValue={displayMonth(month.key)}
               className="w-[150px] text-base md:text-base"
             />
             <Button

@@ -1,6 +1,8 @@
 import type { Decimal } from "@prisma/client/runtime/client";
 
-export function toDecimalNumber(value: Decimal | number | string | null | undefined) {
+export function toDecimalNumber(
+  value: Decimal | number | string | null | undefined,
+) {
   if (value == null) return 0;
   return Number(value);
 }
@@ -41,11 +43,27 @@ export function monthInputValue(date = new Date()) {
 }
 
 export function parseMonth(month?: string | null) {
-  const source = month && /^\d{4}-\d{2}$/.test(month) ? month : monthInputValue();
+  let source = monthInputValue();
+
+  //input usa aaaa/mm como eu mudei o input pra exibir mm/aaaa precisa desse parse
+  if (month && /^\d{4}-\d{2}$/.test(month)) {
+    source = month;
+  }
+
+  if (month && /^\d{2}-\d{4}$/.test(month)) {
+    const [monthIndex, year] = month.split("-");
+    source = `${year}-${monthIndex}`;
+  }
+
   const [year, monthIndex] = source.split("-").map(Number);
   const start = new Date(Date.UTC(year, monthIndex - 1, 1));
   const end = new Date(Date.UTC(year, monthIndex, 1));
   return { key: source, start, end };
+}
+
+export function displayMonth(month: string) {
+  const [year, monthIndex] = month.split("-");
+  return `${monthIndex}-${year}`;
 }
 
 export function parseDateField(value: FormDataEntryValue | null) {
@@ -55,7 +73,10 @@ export function parseDateField(value: FormDataEntryValue | null) {
   return new Date(`${trimmed}T00:00:00.000Z`);
 }
 
-export function parseMoneyField(value: FormDataEntryValue | null, fallback = "0") {
+export function parseMoneyField(
+  value: FormDataEntryValue | null,
+  fallback = "0",
+) {
   if (!value || typeof value !== "string") return fallback;
   const normalized = value
     .trim()
@@ -70,7 +91,10 @@ export function parseOptionalText(value: FormDataEntryValue | null) {
   return trimmed || null;
 }
 
-export function parseRequiredText(value: FormDataEntryValue | null, fieldName: string) {
+export function parseRequiredText(
+  value: FormDataEntryValue | null,
+  fieldName: string,
+) {
   const parsed = parseOptionalText(value);
   if (!parsed) throw new Error(`Campo obrigatório: ${fieldName}`);
   return parsed;
