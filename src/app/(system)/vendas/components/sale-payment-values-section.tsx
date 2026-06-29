@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { PaymentMethod } from "@/generated/prisma/enums";
 import {
   Card,
@@ -15,7 +15,10 @@ import {
   paymentMethodOptions,
 } from "@/lib/domain";
 import { RadioGroup } from "./group-componets";
-import { SaleValuesCard } from "./sale-values-card";
+import {
+  SaleValuesCard,
+  type SaleValuesCardRef,
+} from "./sale-values-card";
 
 type SalePaymentValuesSectionProps = {
   quotedAmount?: string;
@@ -30,13 +33,23 @@ export function SalePaymentValuesSection({
   discountPercent = "",
   paymentMethod,
 }: SalePaymentValuesSectionProps) {
+  const valuesCardRef = useRef<SaleValuesCardRef>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(paymentMethod ?? PaymentMethod.CARD);
   const discountEnabled = discountedPaymentMethods.has(selectedPaymentMethod);
 
+  function handlePaymentMethodChange(nextPaymentMethod: PaymentMethod) {
+    setSelectedPaymentMethod(nextPaymentMethod);
+
+    if (!discountedPaymentMethods.has(nextPaymentMethod)) {
+      valuesCardRef.current?.clearDiscountForDisabledPayment();
+    }
+  }
+
   return (
     <>
       <SaleValuesCard
+        ref={valuesCardRef}
         quotedAmount={quotedAmount}
         closedAmount={closedAmount}
         discountPercent={discountPercent}
@@ -54,7 +67,7 @@ export function SalePaymentValuesSection({
             options={paymentMethodOptions}
             labels={paymentMethodLabels}
             value={selectedPaymentMethod}
-            onValueChange={setSelectedPaymentMethod}
+            onValueChange={handlePaymentMethodChange}
           />
         </CardContent>
         <CardDescription>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,12 +38,20 @@ type SaleValuesCardProps = {
   discountEnabled?: boolean;
 };
 
-export function SaleValuesCard({
-  quotedAmount = "",
-  closedAmount = "",
-  discountPercent = "",
-  discountEnabled = true,
-}: SaleValuesCardProps) {
+export type SaleValuesCardRef = {
+  clearDiscountForDisabledPayment: () => void;
+};
+
+export const SaleValuesCard = forwardRef<SaleValuesCardRef, SaleValuesCardProps>(
+function SaleValuesCard(
+  {
+    quotedAmount = "",
+    closedAmount = "",
+    discountPercent = "",
+    discountEnabled = true,
+  },
+  ref,
+) {
   const [quotedValue, setQuotedValue] = useState(() =>
     formatInitialMoneyValue(quotedAmount),
   );
@@ -51,7 +59,27 @@ export function SaleValuesCard({
     formatInitialMoneyValue(closedAmount),
   );
   const [discountValue, setDiscountValue] = useState(discountPercent);
+  const [lastCalculatedClosedValue, setLastCalculatedClosedValue] = useState<
+    string | null
+  >(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      clearDiscountForDisabledPayment() {
+        setDiscountValue("");
+        setMessage(null);
+        setClosedValue((currentValue) =>
+          currentValue && currentValue === lastCalculatedClosedValue
+            ? formatInitialMoneyValue(quotedValue)
+            : currentValue,
+        );
+        setLastCalculatedClosedValue(null);
+      },
+    }),
+    [lastCalculatedClosedValue, quotedValue],
+  );
 
   function calculateDiscount() {
     if (!discountEnabled) {
@@ -75,7 +103,10 @@ export function SaleValuesCard({
     }
 
     const calculated = quoted - quoted * (discount / 100);
-    setClosedValue(formatBrazilianMoneyValue(Math.max(calculated, 0)));
+    const nextClosedValue = formatBrazilianMoneyValue(Math.max(calculated, 0));
+
+    setClosedValue(nextClosedValue);
+    setLastCalculatedClosedValue(nextClosedValue);
     setMessage(null);
   }
 
@@ -108,7 +139,10 @@ export function SaleValuesCard({
             name="closedAmount"
             inputMode="decimal"
             value={closedValue}
-            onChange={(event) => setClosedValue(event.target.value)}
+            onChange={(event) => {
+              setClosedValue(event.target.value);
+              setLastCalculatedClosedValue(null);
+            }}
           />
         </FormField>
         <div className="grid gap-2">
@@ -131,4 +165,6 @@ export function SaleValuesCard({
       </CardContent>
     </Card>
   );
-}
+});
+
+SaleValuesCard.displayName = "SaleValuesCard";
