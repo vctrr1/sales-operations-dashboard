@@ -24,7 +24,7 @@ function CompactGoalBar({ metric }: { metric: SalesDashboardMetric }) {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <span className="w-12 text-right text-xs text-muted-foreground">
+      <span className="w-12 text-right text-sm text-muted-foreground">
         {percent(progress)}
       </span>
     </div>
@@ -43,7 +43,7 @@ export function AdminSellerPerformanceTable({
       </CardHeader>
       <CardContent>
         {metrics.length > 0 ? (
-          <Table>
+          <Table className="text-base">
             <TableHeader>
               <TableRow>
                 <TableHead>Vendedor</TableHead>
@@ -57,7 +57,7 @@ export function AdminSellerPerformanceTable({
                 <TableHead>Atingimento</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="text-muted-foreground">
               {metrics.map((metric) => (
                 <TableRow key={metric.sellerName}>
                   <TableCell className="font-medium">
@@ -70,7 +70,9 @@ export function AdminSellerPerformanceTable({
                   <TableCell>{money(metric.ticket)}</TableCell>
                   <TableCell>{percent(metric.discountAverage)}</TableCell>
                   <TableCell>
-                    {money(metric.goalSuper || metric.goalMid || metric.goalBase)}
+                    {money(
+                      metric.goalSuper || metric.goalMid || metric.goalBase,
+                    )}
                   </TableCell>
                   <TableCell>
                     <CompactGoalBar metric={metric} />

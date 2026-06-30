@@ -348,7 +348,7 @@ export default async function SalesDashboardPage({
     (order) => order.productCategory,
     productCategoryLabels,
   );
-  const customerOriginData = buildValueComposition(
+  const customerOriginData = buildCountComposition(
     orders,
     month,
     (order) => order.customerOrigin,

@@ -58,31 +58,34 @@ export function SalesAdminDashboard({
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.65fr)]">
+      <section className="grid gap-4 xl:grid-cols-2">
         <AdminGeneralGoalCard metric={generalMetric} />
-
         <AdminCompositionDonutCard
           title="Categorias mais vendidas"
           data={categoryData}
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid gap-4 xl:grid-cols-3">
+        <AdminOperationalSummary items={operationalSummary} />
         <AdminCompositionDonutCard
           title="Logística dos pedidos"
           data={logisticsData}
           valueType="quantity"
           centerLabel="Pedidos"
+          legendPosition="bottom"
         />
         <AdminCompositionDonutCard
           title="Origem do cliente"
           data={customerOriginData}
+          valueType="quantity"
+          centerLabel="Vendas"
+          legendPosition="bottom"
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <section>
         <AdminSellerPerformanceTable metrics={sellerMetrics} />
-        <AdminOperationalSummary items={operationalSummary} />
       </section>
     </>
   );
