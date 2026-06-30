@@ -173,7 +173,7 @@ export function SalesAdminDashboard({
           iconClassName="text-sky-500"
         />
         <MetricCard
-          title="Conversão (nº)"
+          title="Conversão"
           value={percent(generalMetric.conversionCount)}
           helper={pointDelta(
             generalMetric.conversionCount,
@@ -192,7 +192,7 @@ export function SalesAdminDashboard({
           iconClassName="text-amber-500"
         />
         <MetricCard
-          title="Total de Vendas (nº)"
+          title="Total de Vendas"
           value={String(generalMetric.saleCount)}
           helper={countDelta(generalMetric.saleCount, previousMetric.saleCount)}
           icon={ShoppingCartIcon}
