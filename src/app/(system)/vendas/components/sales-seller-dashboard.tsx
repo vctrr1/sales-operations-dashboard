@@ -119,14 +119,14 @@ export function SalesSellerDashboard({
     if (difference === 0) {
       return {
         value: "Igual",
-        suffix: "ao período anterior",
+        suffix: "ao mês anterior",
         tone: "neutral",
       };
     }
 
     return {
       value: `${difference > 0 ? "+" : ""}${difference}`,
-      suffix: "vs. período anterior",
+      suffix: "vs. mês anterior",
       tone: difference > 0 ? "positive" : "negative",
     } satisfies MetricHelper;
   }
@@ -135,7 +135,7 @@ export function SalesSellerDashboard({
     if (!previous) {
       return {
         value: "Sem base",
-        suffix: "no período anterior",
+        suffix: "no mês anterior",
         tone: "neutral",
       };
     }
@@ -143,7 +143,7 @@ export function SalesSellerDashboard({
     const difference = ((current - previous) / previous) * 100;
     return {
       value: `${difference > 0 ? "+" : ""}${percent(difference)}`,
-      suffix: "vs. período anterior",
+      suffix: "vs. mês anterior",
       tone:
         difference === 0 ? "neutral" : difference > 0 ? "positive" : "negative",
     } satisfies MetricHelper;
@@ -154,14 +154,14 @@ export function SalesSellerDashboard({
     if (difference === 0) {
       return {
         value: "Igual",
-        suffix: "ao período anterior",
+        suffix: "ao mês anterior",
         tone: "neutral",
       };
     }
 
     return {
       value: `${difference > 0 ? "+" : ""}${percent(difference)} p.p.`,
-      suffix: "vs. período anterior",
+      suffix: "vs. mês anterior",
       tone: difference > 0 ? "positive" : "negative",
     } satisfies MetricHelper;
   }
