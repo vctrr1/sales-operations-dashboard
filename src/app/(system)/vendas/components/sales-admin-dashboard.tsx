@@ -58,7 +58,7 @@ export function SalesAdminDashboard({
           value={money(generalMetric.totalClosed)}
         />
         <MetricCard
-          title="Conversão nº"
+          title="Taxa de Conversão (nº)"
           value={percent(generalMetric.conversionCount)}
         />
         <MetricCard title="Vendas" value={String(generalMetric.saleCount)} />

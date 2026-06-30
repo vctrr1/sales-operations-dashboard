@@ -137,7 +137,7 @@ export function SalesSellerDashboard({
           helper={percentDelta(metric.totalClosed, previousMetric.totalClosed)}
         />
         <SellerMetricCard
-          title="Conversão Nº"
+          title="Taxa de Conversão (nº)"
           value={percent(metric.conversionCount)}
           helper={pointDelta(
             metric.conversionCount,
@@ -164,7 +164,7 @@ export function SalesSellerDashboard({
             helper={countDelta(metric.saleCount, previousMetric.saleCount)}
           />
           <SellerMetricCard
-            title="Conversão R$"
+            title="Taxa de Conversão (R$)"
             value={percent(metric.conversionValue)}
             helper={pointDelta(
               metric.conversionValue,
