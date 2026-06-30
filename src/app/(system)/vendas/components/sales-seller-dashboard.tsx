@@ -82,7 +82,7 @@ function GoalLevel({
   iconSrc: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-t py-3 text-base">
+    <div className="flex items-center justify-between gap-3 border-t border-dashed py-3 text-base">
       <div className="flex items-center gap-2 font-medium">
         <Image
           src={iconSrc}
