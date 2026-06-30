@@ -39,7 +39,7 @@ export function AdminSellerPerformanceTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Desempenho por vendedor</CardTitle>
+        <CardTitle className="text-lg">Desempenho por Vendedor</CardTitle>
       </CardHeader>
       <CardContent>
         {metrics.length > 0 ? (
@@ -53,7 +53,7 @@ export function AdminSellerPerformanceTable({
                 <TableHead>Vendas</TableHead>
                 <TableHead>Ticket Médio</TableHead>
                 <TableHead>Desc. Médio</TableHead>
-                <TableHead>Meta</TableHead>
+                <TableHead>Meta (Super)</TableHead>
                 <TableHead>Atingimento</TableHead>
               </TableRow>
             </TableHeader>

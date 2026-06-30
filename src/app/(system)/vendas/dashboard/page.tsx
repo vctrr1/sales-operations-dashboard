@@ -275,7 +275,13 @@ export default async function SalesDashboardPage({
           : { month: month.start, sellerName: sellerKey },
       }),
       isAdmin
-        ? Promise.resolve([])
+        ? prisma.saleOrder.findMany({
+            where: {
+              commercialStatus: "CLOSED",
+              closedAt: { gte: chartStart, lt: month.end },
+            },
+            orderBy: { closedAt: "asc" },
+          })
         : prisma.saleOrder.findMany({
             where: {
               commercialStatus: "CLOSED",
@@ -288,7 +294,25 @@ export default async function SalesDashboardPage({
             orderBy: { closedAt: "asc" },
           }),
       isAdmin
-        ? Promise.resolve([])
+        ? prisma.saleOrder.findMany({
+            where: {
+              OR: [
+                {
+                  quoteDate: {
+                    gte: previousMonth.start,
+                    lt: previousMonth.end,
+                  },
+                },
+                {
+                  closedAt: {
+                    gte: previousMonth.start,
+                    lt: previousMonth.end,
+                  },
+                },
+              ],
+            },
+            orderBy: { sellerName: "asc" },
+          })
         : prisma.saleOrder.findMany({
             where: {
               AND: [
@@ -362,10 +386,12 @@ export default async function SalesDashboardPage({
   );
   const operationalSummary = buildOperationalSummary(orders);
   const previousMetric = buildMetric(
-    user.name,
+    isAdmin ? "Geral" : user.name,
     previousOrders,
     previousMonth,
-    goalsBySeller.get(sellerKey),
+    isAdmin
+      ? goalsBySeller.get(GENERAL_GOAL_SELLER)
+      : goalsBySeller.get(sellerKey),
   );
 
   return (
@@ -397,11 +423,13 @@ export default async function SalesDashboardPage({
       {isAdmin ? (
         <SalesAdminDashboard
           generalMetric={generalMetric}
+          previousMetric={previousMetric}
           sellerMetrics={sellerMetrics}
           categoryData={categoryData}
           customerOriginData={customerOriginData}
           logisticsData={logisticsData}
           operationalSummary={operationalSummary}
+          closingChartData={closingChartData}
         />
       ) : (
         <SalesSellerDashboard

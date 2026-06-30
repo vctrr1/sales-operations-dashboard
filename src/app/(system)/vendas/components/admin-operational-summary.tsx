@@ -9,7 +9,7 @@ export function AdminOperationalSummary({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Resumo operacional</CardTitle>
+        <CardTitle className="text-lg">Resumo Operacional</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
         {items.map((item) => (
