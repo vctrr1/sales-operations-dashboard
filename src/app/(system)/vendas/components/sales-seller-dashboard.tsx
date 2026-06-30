@@ -9,7 +9,8 @@ import type {
 } from "./sales-dashboard-types";
 
 type MetricHelper = {
-  label: string;
+  value: string;
+  suffix: string;
   tone: "positive" | "negative" | "neutral";
 };
 
@@ -27,15 +28,17 @@ function SellerMetricCard({
       <CardContent className="grid gap-2">
         <p className="text-base font-medium text-muted-foreground">{title}</p>
         <p className="text-2xl font-semibold tracking-tight">{value}</p>
-        <p
-          className={cn(
-            "text-sm font-medium",
-            helper.tone === "positive" && "text-emerald-600",
-            helper.tone === "negative" && "text-destructive",
-            helper.tone === "neutral" && "text-muted-foreground",
-          )}
-        >
-          {helper.label}
+        <p className="text-sm font-medium text-muted-foreground">
+          <span
+            className={cn(
+              helper.tone === "positive" && "text-emerald-500",
+              helper.tone === "negative" && "text-destructive",
+              helper.tone === "neutral" && "text-muted-foreground",
+            )}
+          >
+            {helper.value}
+          </span>{" "}
+          {helper.suffix}
         </p>
       </CardContent>
     </Card>
@@ -89,23 +92,33 @@ export function SalesSellerDashboard({
   function countDelta(current: number, previous: number): MetricHelper {
     const difference = current - previous;
     if (difference === 0) {
-      return { label: "Igual ao mês anterior", tone: "neutral" };
+      return {
+        value: "Igual",
+        suffix: "ao período anterior",
+        tone: "neutral",
+      };
     }
 
     return {
-      label: `${difference > 0 ? "+" : ""}${difference} vs mês anterior`,
+      value: `${difference > 0 ? "+" : ""}${difference}`,
+      suffix: "vs. período anterior",
       tone: difference > 0 ? "positive" : "negative",
     } satisfies MetricHelper;
   }
 
   function percentDelta(current: number, previous: number): MetricHelper {
     if (!previous) {
-      return { label: "Sem base anterior", tone: "neutral" };
+      return {
+        value: "Sem base",
+        suffix: "no período anterior",
+        tone: "neutral",
+      };
     }
 
     const difference = ((current - previous) / previous) * 100;
     return {
-      label: `${percent(difference)} vs mês anterior`,
+      value: `${difference > 0 ? "+" : ""}${percent(difference)}`,
+      suffix: "vs. período anterior",
       tone:
         difference === 0 ? "neutral" : difference > 0 ? "positive" : "negative",
     } satisfies MetricHelper;
@@ -114,11 +127,16 @@ export function SalesSellerDashboard({
   function pointDelta(current: number, previous: number): MetricHelper {
     const difference = current - previous;
     if (difference === 0) {
-      return { label: "Igual ao mês anterior", tone: "neutral" };
+      return {
+        value: "Igual",
+        suffix: "ao período anterior",
+        tone: "neutral",
+      };
     }
 
     return {
-      label: `${difference > 0 ? "+" : ""}${percent(difference)} p.p. vs mês anterior`,
+      value: `${difference > 0 ? "+" : ""}${percent(difference)} p.p.`,
+      suffix: "vs. período anterior",
       tone: difference > 0 ? "positive" : "negative",
     } satisfies MetricHelper;
   }
