@@ -1,13 +1,22 @@
-import { UserRole } from "@/generated/prisma/enums";
+import { AssemblyStatus, UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SalesAdminDashboard } from "../components/sales-admin-dashboard";
 import { SalesSellerDashboard } from "../components/sales-seller-dashboard";
 import type {
   SalesClosingChartItem,
+  SalesCompositionItem,
   SalesDashboardMetric,
+  SalesOperationalSummaryItem,
 } from "../components/sales-dashboard-types";
-import { discountedPaymentMethods, GENERAL_GOAL_SELLER } from "@/lib/domain";
+import {
+  assemblyStatusLabels,
+  customerOriginLabels,
+  discountedPaymentMethods,
+  GENERAL_GOAL_SELLER,
+  logisticsTypeLabels,
+  productCategoryLabels,
+} from "@/lib/domain";
 import { displayMonth, parseMonth, toDecimalNumber } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
@@ -121,6 +130,103 @@ function buildClosingChartData(
   });
 }
 
+function buildValueComposition(
+  orders: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>,
+  range: { start: Date; end: Date },
+  getKey: (
+    order: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>[number],
+  ) => string,
+  labels: Record<string, string>,
+) {
+  const totals = new Map<string, number>();
+
+  for (const order of orders) {
+    if (
+      order.commercialStatus !== "CLOSED" ||
+      !inRange(order.closedAt, range.start, range.end)
+    ) {
+      continue;
+    }
+
+    const key = getKey(order);
+    totals.set(
+      key,
+      (totals.get(key) ?? 0) + toDecimalNumber(order.closedAmount),
+    );
+  }
+
+  return Array.from(totals.entries())
+    .map(([key, value]) => ({
+      key,
+      label: labels[key] ?? key,
+      value,
+    }))
+    .sort((a, b) => b.value - a.value) satisfies SalesCompositionItem[];
+}
+
+function buildCountComposition(
+  orders: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>,
+  range: { start: Date; end: Date },
+  getKey: (
+    order: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>[number],
+  ) => string,
+  labels: Record<string, string>,
+) {
+  const totals = new Map<string, number>();
+
+  for (const order of orders) {
+    if (
+      order.commercialStatus !== "CLOSED" ||
+      !inRange(order.closedAt, range.start, range.end)
+    ) {
+      continue;
+    }
+
+    const key = getKey(order);
+    totals.set(key, (totals.get(key) ?? 0) + 1);
+  }
+
+  return Array.from(totals.entries())
+    .map(([key, value]) => ({
+      key,
+      label: labels[key] ?? key,
+      value,
+    }))
+    .sort((a, b) => b.value - a.value) satisfies SalesCompositionItem[];
+}
+
+function buildOperationalSummary(
+  orders: Awaited<
+    ReturnType<
+      typeof prisma.saleOrder.findMany<{
+        include: { assemblyOrder: true };
+      }>
+    >
+  >,
+) {
+  const counts = new Map<AssemblyStatus, number>(
+    Object.values(AssemblyStatus).map((status) => [status, 0]),
+  );
+
+  for (const order of orders) {
+    if (!order.assemblyOrder) continue;
+
+    counts.set(
+      order.assemblyOrder.status,
+      (counts.get(order.assemblyOrder.status) ?? 0) + 1,
+    );
+  }
+
+  return Object.values(AssemblyStatus).map((status) => ({
+    key: status,
+    label:
+      status === AssemblyStatus.NO_ASSEMBLY
+        ? "Em montagem"
+        : assemblyStatusLabels[status],
+    count: counts.get(status) ?? 0,
+  })) satisfies SalesOperationalSummaryItem[];
+}
+
 export default async function SalesDashboardPage({
   searchParams,
 }: {
@@ -140,6 +246,7 @@ export default async function SalesDashboardPage({
   const [orders, goals, closingChartOrders, previousOrders] = await Promise.all(
     [
       prisma.saleOrder.findMany({
+        include: { assemblyOrder: true },
         where: {
           AND: [
             {
@@ -235,6 +342,25 @@ export default async function SalesDashboardPage({
     ),
   );
   const closingChartData = buildClosingChartData(closingChartOrders, month);
+  const categoryData = buildValueComposition(
+    orders,
+    month,
+    (order) => order.productCategory,
+    productCategoryLabels,
+  );
+  const customerOriginData = buildValueComposition(
+    orders,
+    month,
+    (order) => order.customerOrigin,
+    customerOriginLabels,
+  );
+  const logisticsData = buildCountComposition(
+    orders,
+    month,
+    (order) => order.logisticsType,
+    logisticsTypeLabels,
+  );
+  const operationalSummary = buildOperationalSummary(orders);
   const previousMetric = buildMetric(
     user.name,
     previousOrders,
@@ -272,6 +398,10 @@ export default async function SalesDashboardPage({
         <SalesAdminDashboard
           generalMetric={generalMetric}
           sellerMetrics={sellerMetrics}
+          categoryData={categoryData}
+          customerOriginData={customerOriginData}
+          logisticsData={logisticsData}
+          operationalSummary={operationalSummary}
         />
       ) : (
         <SalesSellerDashboard

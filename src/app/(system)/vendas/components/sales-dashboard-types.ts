@@ -18,3 +18,15 @@ export type SalesClosingChartItem = {
   monthKey: string;
   totalClosed: number;
 };
+
+export type SalesCompositionItem = {
+  key: string;
+  label: string;
+  value: number;
+};
+
+export type SalesOperationalSummaryItem = {
+  key: string;
+  label: string;
+  count: number;
+};
