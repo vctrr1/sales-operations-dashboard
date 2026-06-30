@@ -7,6 +7,13 @@ import type {
   SalesClosingChartItem,
   SalesDashboardMetric,
 } from "./sales-dashboard-types";
+import {
+  Percent,
+  DollarSign,
+  ReceiptText,
+  Calculator,
+  type LucideIcon,
+} from "lucide-react";
 
 type MetricHelper = {
   value: string;
@@ -18,28 +25,46 @@ function SellerMetricCard({
   title,
   value,
   helper,
+  icon: Icon,
+  iconClassName,
+  iconContainerClassName,
 }: {
   title: string;
   value: string;
   helper: MetricHelper;
+  icon?: LucideIcon;
+  iconClassName?: string;
+  iconContainerClassName?: string;
 }) {
   return (
     <Card size="sm" className="border-border/70 shadow-sm">
-      <CardContent className="grid gap-2">
-        <p className="text-base font-medium text-muted-foreground">{title}</p>
-        <p className="text-2xl font-semibold tracking-tight">{value}</p>
-        <p className="text-sm font-medium text-muted-foreground">
-          <span
+      <CardContent className="flex justify-between gap-4">
+        <div className="grid gap-2">
+          <p className="text-base font-medium text-muted-foreground">{title}</p>
+          <p className="text-2xl font-semibold tracking-tight">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            <span
+              className={cn(
+                helper.tone === "positive" && "text-emerald-500",
+                helper.tone === "negative" && "text-destructive",
+                helper.tone === "neutral" && "text-muted-foreground",
+              )}
+            >
+              {helper.value}
+            </span>{" "}
+            {helper.suffix}
+          </p>
+        </div>
+        {Icon ? (
+          <div
             className={cn(
-              helper.tone === "positive" && "text-emerald-500",
-              helper.tone === "negative" && "text-destructive",
-              helper.tone === "neutral" && "text-muted-foreground",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+              iconContainerClassName,
             )}
           >
-            {helper.value}
-          </span>{" "}
-          {helper.suffix}
-        </p>
+            <Icon className={cn("size-5", iconClassName)} />
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -148,11 +173,17 @@ export function SalesSellerDashboard({
           title="Total Orçado"
           value={money(metric.totalQuoted)}
           helper={percentDelta(metric.totalQuoted, previousMetric.totalQuoted)}
+          icon={DollarSign}
+          iconContainerClassName="bg-emerald-400/20"
+          iconClassName="text-emerald-500"
         />
         <SellerMetricCard
           title="Total Fechado"
           value={money(metric.totalClosed)}
           helper={percentDelta(metric.totalClosed, previousMetric.totalClosed)}
+          icon={ReceiptText}
+          iconContainerClassName="bg-sky-400/20"
+          iconClassName="text-sky-500"
         />
         <SellerMetricCard
           title="Taxa de Conversão (nº)"
@@ -161,11 +192,17 @@ export function SalesSellerDashboard({
             metric.conversionCount,
             previousMetric.conversionCount,
           )}
+          icon={Percent}
+          iconContainerClassName="bg-violet-400/20"
+          iconClassName="text-violet-500"
         />
         <SellerMetricCard
           title="Ticket Médio"
           value={money(metric.ticket)}
           helper={percentDelta(metric.ticket, previousMetric.ticket)}
+          icon={Calculator}
+          iconContainerClassName="bg-amber-400/20"
+          iconClassName="text-amber-500"
         />
       </section>
 
