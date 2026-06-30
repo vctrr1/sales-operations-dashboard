@@ -12,6 +12,14 @@ import type {
   SalesDashboardMetric,
   SalesOperationalSummaryItem,
 } from "./sales-dashboard-types";
+import {
+  DollarSign,
+  LucideIcon,
+  ReceiptText,
+  Percent,
+  Calculator,
+  ShoppingCartIcon,
+} from "lucide-react";
 
 type MetricHelper = {
   value: string;
@@ -23,18 +31,22 @@ function MetricCard({
   title,
   value,
   helper,
+  icon: Icon,
+  iconClassName,
+  iconContainerClassName,
 }: {
   title: string;
   value: string;
   helper: MetricHelper;
+  icon?: LucideIcon;
+  iconClassName?: string;
+  iconContainerClassName?: string;
 }) {
   return (
     <Card size="sm" className="border-border/70 shadow-sm">
-      <CardContent>
+      <CardContent className="flex justify-between gap-4">
         <div className="grid gap-2">
-          <p className="text-base font-medium text-muted-foreground">
-            {title}
-          </p>
+          <p className="text-base font-medium text-muted-foreground">{title}</p>
           <p className="text-2xl font-semibold tracking-tight">{value}</p>
           <p className="text-sm font-medium text-muted-foreground">
             <span
@@ -49,6 +61,16 @@ function MetricCard({
             {helper.suffix}
           </p>
         </div>
+        {Icon ? (
+          <div
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+              iconContainerClassName,
+            )}
+          >
+            <Icon className={cn("size-5", iconClassName)} />
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -135,6 +157,9 @@ export function SalesAdminDashboard({
             generalMetric.totalQuoted,
             previousMetric.totalQuoted,
           )}
+          icon={DollarSign}
+          iconContainerClassName="bg-emerald-400/20"
+          iconClassName="text-emerald-500"
         />
         <MetricCard
           title="Total Fechado"
@@ -143,24 +168,36 @@ export function SalesAdminDashboard({
             generalMetric.totalClosed,
             previousMetric.totalClosed,
           )}
+          icon={ReceiptText}
+          iconContainerClassName="bg-sky-400/20"
+          iconClassName="text-sky-500"
         />
         <MetricCard
-          title="Taxa de Conversão (nº)"
+          title="Conversão (nº)"
           value={percent(generalMetric.conversionCount)}
           helper={pointDelta(
             generalMetric.conversionCount,
             previousMetric.conversionCount,
           )}
+          icon={Percent}
+          iconContainerClassName="bg-violet-400/20"
+          iconClassName="text-violet-500"
         />
         <MetricCard
           title="Ticket Médio"
           value={money(generalMetric.ticket)}
           helper={percentDelta(generalMetric.ticket, previousMetric.ticket)}
+          icon={Calculator}
+          iconContainerClassName="bg-amber-400/20"
+          iconClassName="text-amber-500"
         />
         <MetricCard
           title="Total de Vendas (nº)"
           value={String(generalMetric.saleCount)}
           helper={countDelta(generalMetric.saleCount, previousMetric.saleCount)}
+          icon={ShoppingCartIcon}
+          iconContainerClassName="bg-red-400/20"
+          iconClassName="text-red-500"
         />
       </section>
 
