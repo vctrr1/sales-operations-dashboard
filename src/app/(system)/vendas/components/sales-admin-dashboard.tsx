@@ -14,11 +14,11 @@ import type {
 } from "./sales-dashboard-types";
 import {
   DollarSign,
-  LucideIcon,
   ReceiptText,
   Percent,
   Calculator,
   ShoppingCartIcon,
+  type LucideIcon,
 } from "lucide-react";
 
 type MetricHelper = {
@@ -43,8 +43,8 @@ function MetricCard({
   iconContainerClassName?: string;
 }) {
   return (
-    <Card size="sm" className="border-border/70 shadow-sm">
-      <CardContent className="flex justify-between gap-4">
+    <Card size="sm" className="relative border-border/70 shadow-sm">
+      <CardContent>
         <div className="grid gap-2">
           <p className="text-base font-medium text-muted-foreground">{title}</p>
           <p className="text-2xl font-semibold tracking-tight">{value}</p>
@@ -64,7 +64,7 @@ function MetricCard({
         {Icon ? (
           <div
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+              "pointer-events-none absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full",
               iconContainerClassName,
             )}
           >
@@ -197,7 +197,7 @@ export function SalesAdminDashboard({
           helper={countDelta(generalMetric.saleCount, previousMetric.saleCount)}
           icon={ShoppingCartIcon}
           iconContainerClassName="bg-red-400/20"
-          iconClassName="text-red-500"
+          iconClassName="text-red-400"
         />
       </section>
 

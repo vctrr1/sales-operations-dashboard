@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -7,6 +8,34 @@ import {
 } from "@/components/ui/card";
 import { money, percent } from "@/lib/format";
 import type { SalesDashboardMetric } from "./sales-dashboard-types";
+
+function GoalLevelSummary({
+  label,
+  amount,
+  active,
+  iconSrc,
+}: {
+  label: string;
+  amount: number;
+  active: boolean;
+  iconSrc: string;
+}) {
+  return (
+    <div className="rounded-md border border-dashed p-3 flex justify-between">
+      <div className="flex flex-col">
+        <p className="text-base font-medium">{label}</p>
+        <p className="mt-2 text-base text-muted-foreground">{money(amount)}</p>
+      </div>
+      <Image
+        src={iconSrc}
+        alt=""
+        width={40}
+        height={40}
+        className={active ? "opacity-100" : "opacity-30"}
+      />
+    </div>
+  );
+}
 
 export function AdminGeneralGoalCard({
   metric,
@@ -41,24 +70,26 @@ export function AdminGeneralGoalCard({
         </div>
 
         <div className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-md border p-4">
-            <p className="text-sm font-medium">Meta Base</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {money(metric.goalBase)}
-            </p>
-          </div>
-          <div className="rounded-md border p-4">
-            <p className="text-sm font-medium">Meta Média</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {money(metric.goalMid)}
-            </p>
-          </div>
-          <div className="rounded-md border p-4">
-            <p className="text-sm font-medium">Meta Super</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {money(metric.goalSuper)}
-            </p>
-          </div>
+          <GoalLevelSummary
+            label="Meta Base"
+            amount={metric.goalBase}
+            iconSrc="/medal-bronze.svg"
+            active={metric.totalClosed >= metric.goalBase && !!metric.goalBase}
+          />
+          <GoalLevelSummary
+            label="Meta Média"
+            amount={metric.goalMid}
+            iconSrc="/medal-silver.svg"
+            active={metric.totalClosed >= metric.goalMid && !!metric.goalMid}
+          />
+          <GoalLevelSummary
+            label="Meta Super"
+            amount={metric.goalSuper}
+            iconSrc="/medal-gold.svg"
+            active={
+              metric.totalClosed >= metric.goalSuper && !!metric.goalSuper
+            }
+          />
         </div>
       </CardContent>
     </Card>
