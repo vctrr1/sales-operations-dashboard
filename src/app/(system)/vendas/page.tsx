@@ -275,7 +275,7 @@ export default async function SalesPage({
             <CardContent className="grid gap-4 md:grid-cols-[minmax(220px,320px)_180px_1fr]">
               <RadioGroup
                 name="priority"
-                label="Prioridade da montagem"
+                label="Prioridade da Montagem"
                 options={priorityOptions}
                 labels={priorityLabels}
                 defaultValue={
@@ -283,7 +283,7 @@ export default async function SalesPage({
                 }
                 columns="grid-cols-3"
               />
-              <FormField label="Data programada">
+              <FormField label="Data Programada">
                 <Input
                   type="date"
                   name="scheduledDate"
@@ -292,7 +292,7 @@ export default async function SalesPage({
                   )}
                 />
               </FormField>
-              <FormField label="Prazo/observação da montagem">
+              <FormField label="Prazo/Observação da montagem">
                 <Input
                   name="scheduleNotes"
                   defaultValue={

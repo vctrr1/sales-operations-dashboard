@@ -196,25 +196,14 @@ function buildCountComposition(
 }
 
 function buildOperationalSummary(
-  orders: Awaited<
-    ReturnType<
-      typeof prisma.saleOrder.findMany<{
-        include: { assemblyOrder: true };
-      }>
-    >
-  >,
+  orders: Awaited<ReturnType<typeof prisma.assemblyOrder.findMany>>,
 ) {
   const counts = new Map<AssemblyStatus, number>(
     Object.values(AssemblyStatus).map((status) => [status, 0]),
   );
 
   for (const order of orders) {
-    if (!order.assemblyOrder) continue;
-
-    counts.set(
-      order.assemblyOrder.status,
-      (counts.get(order.assemblyOrder.status) ?? 0) + 1,
-    );
+    counts.set(order.status, (counts.get(order.status) ?? 0) + 1);
   }
 
   return Object.values(AssemblyStatus).map((status) => ({
@@ -243,107 +232,121 @@ export default async function SalesDashboardPage({
   };
   const chartStart = addUtcMonths(month.start, -6);
 
-  const [orders, goals, closingChartOrders, previousOrders] = await Promise.all(
-    [
-      prisma.saleOrder.findMany({
-        include: { assemblyOrder: true },
-        where: {
-          AND: [
-            {
-              OR: [
-                { quoteDate: { gte: month.start, lt: month.end } },
-                { closedAt: { gte: month.start, lt: month.end } },
-              ],
-            },
-            ...(isAdmin
-              ? []
-              : [
-                  {
-                    sellerName: {
-                      equals: user.name,
-                      mode: "insensitive" as const,
-                    },
-                  },
-                ]),
-          ],
-        },
-        orderBy: { sellerName: "asc" },
-      }),
-      prisma.monthlyGoal.findMany({
-        where: isAdmin
-          ? { month: month.start }
-          : { month: month.start, sellerName: sellerKey },
-      }),
-      isAdmin
-        ? prisma.saleOrder.findMany({
-            where: {
-              commercialStatus: "CLOSED",
-              closedAt: { gte: chartStart, lt: month.end },
-            },
-            orderBy: { closedAt: "asc" },
-          })
-        : prisma.saleOrder.findMany({
-            where: {
-              commercialStatus: "CLOSED",
-              closedAt: { gte: chartStart, lt: month.end },
-              sellerName: {
-                equals: user.name,
-                mode: "insensitive",
-              },
-            },
-            orderBy: { closedAt: "asc" },
-          }),
-      isAdmin
-        ? prisma.saleOrder.findMany({
-            where: {
-              OR: [
-                {
-                  quoteDate: {
-                    gte: previousMonth.start,
-                    lt: previousMonth.end,
-                  },
-                },
-                {
-                  closedAt: {
-                    gte: previousMonth.start,
-                    lt: previousMonth.end,
-                  },
-                },
-              ],
-            },
-            orderBy: { sellerName: "asc" },
-          })
-        : prisma.saleOrder.findMany({
-            where: {
-              AND: [
-                {
-                  OR: [
-                    {
-                      quoteDate: {
-                        gte: previousMonth.start,
-                        lt: previousMonth.end,
-                      },
-                    },
-                    {
-                      closedAt: {
-                        gte: previousMonth.start,
-                        lt: previousMonth.end,
-                      },
-                    },
-                  ],
-                },
+  const [
+    orders,
+    goals,
+    closingChartOrders,
+    previousOrders,
+    assemblyOrders,
+  ] = await Promise.all([
+    prisma.saleOrder.findMany({
+      include: { assemblyOrder: true },
+      where: {
+        AND: [
+          {
+            OR: [
+              { quoteDate: { gte: month.start, lt: month.end } },
+              { closedAt: { gte: month.start, lt: month.end } },
+            ],
+          },
+          ...(isAdmin
+            ? []
+            : [
                 {
                   sellerName: {
                     equals: user.name,
-                    mode: "insensitive",
+                    mode: "insensitive" as const,
                   },
                 },
-              ],
+              ]),
+        ],
+      },
+      orderBy: { sellerName: "asc" },
+    }),
+    prisma.monthlyGoal.findMany({
+      where: isAdmin
+        ? { month: month.start }
+        : { month: month.start, sellerName: sellerKey },
+    }),
+    isAdmin
+      ? prisma.saleOrder.findMany({
+          where: {
+            commercialStatus: "CLOSED",
+            closedAt: { gte: chartStart, lt: month.end },
+          },
+          orderBy: { closedAt: "asc" },
+        })
+      : prisma.saleOrder.findMany({
+          where: {
+            commercialStatus: "CLOSED",
+            closedAt: { gte: chartStart, lt: month.end },
+            sellerName: {
+              equals: user.name,
+              mode: "insensitive",
             },
-            orderBy: { sellerName: "asc" },
-          }),
-    ],
-  );
+          },
+          orderBy: { closedAt: "asc" },
+        }),
+    isAdmin
+      ? prisma.saleOrder.findMany({
+          where: {
+            OR: [
+              {
+                quoteDate: {
+                  gte: previousMonth.start,
+                  lt: previousMonth.end,
+                },
+              },
+              {
+                closedAt: {
+                  gte: previousMonth.start,
+                  lt: previousMonth.end,
+                },
+              },
+            ],
+          },
+          orderBy: { sellerName: "asc" },
+        })
+      : prisma.saleOrder.findMany({
+          where: {
+            AND: [
+              {
+                OR: [
+                  {
+                    quoteDate: {
+                      gte: previousMonth.start,
+                      lt: previousMonth.end,
+                    },
+                  },
+                  {
+                    closedAt: {
+                      gte: previousMonth.start,
+                      lt: previousMonth.end,
+                    },
+                  },
+                ],
+              },
+              {
+                sellerName: {
+                  equals: user.name,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+          orderBy: { sellerName: "asc" },
+        }),
+    isAdmin
+      ? prisma.assemblyOrder.findMany({
+          orderBy: [
+            { status: "asc" },
+            { scheduledDate: "asc" },
+            { orderIndex: "asc" },
+            { requestedAt: "asc" },
+          ],
+        })
+      : Promise.resolve([]),
+  ]);
 
   const goalsBySeller = new Map(goals.map((goal) => [goal.sellerName, goal]));
   const sellers = Array.from(
@@ -384,7 +387,7 @@ export default async function SalesDashboardPage({
     (order) => order.logisticsType,
     logisticsTypeLabels,
   );
-  const operationalSummary = buildOperationalSummary(orders);
+  const operationalSummary = buildOperationalSummary(assemblyOrders);
   const previousMetric = buildMetric(
     isAdmin ? "Geral" : user.name,
     previousOrders,
