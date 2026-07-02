@@ -16,7 +16,7 @@ export default async function AppLayout({
   return (
     <div className="min-h-svh">
       <AppNavbar user={user} />
-      <main className="mx-auto max-w-375 px-4 py-6 ">{children}</main>
+      <main className="mx-auto px-4 py-6 ">{children}</main>
     </div>
   );
 }

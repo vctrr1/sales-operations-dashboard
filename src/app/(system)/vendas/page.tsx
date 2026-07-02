@@ -89,7 +89,7 @@ export default async function SalesPage({
   const formKey = editingOrder?.id ?? "new-order";
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 max-w-375 mx-auto">
       <section className="grid gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
