@@ -320,7 +320,7 @@ export default async function SalesPage({
               pattern="\d{2}-\d{4}"
               placeholder="mm-aaaa"
               defaultValue={displayMonth(month.key)}
-              className="w-[150px] text-base md:text-base"
+              className="w-37.5 text-base md:text-base"
             />
             <Button
               type="submit"
@@ -332,7 +332,7 @@ export default async function SalesPage({
           </form>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-base">
+          <table className="w-full min-w-230 text-left text-base">
             <thead className="border-b text-sm uppercase text-muted-foreground">
               <tr>
                 <th className="py-2 pr-3">Ordem</th>
