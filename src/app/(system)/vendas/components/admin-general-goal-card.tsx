@@ -32,6 +32,7 @@ function GoalLevelSummary({
         width={40}
         height={40}
         className={active ? "opacity-100" : "opacity-30"}
+        style={{ height: "auto" }}
       />
     </div>
   );

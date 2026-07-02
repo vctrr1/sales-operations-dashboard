@@ -90,6 +90,7 @@ function GoalLevel({
           width={32}
           height={32}
           className={active ? "opacity-100" : "opacity-30"}
+          style={{ height: "auto" }}
         />
         <span>{label}</span>
       </div>
