@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FormField } from "./group-componets";
+import { toast } from "sonner";
 
 function parseBrazilianNumber(value: string) {
   const trimmed = value.trim();
@@ -62,14 +63,11 @@ function SaleValuesCard(
   const [lastCalculatedClosedValue, setLastCalculatedClosedValue] = useState<
     string | null
   >(null);
-  const [message, setMessage] = useState<string | null>(null);
-
   useImperativeHandle(
     ref,
     () => ({
       clearDiscountForDisabledPayment() {
         setDiscountValue("");
-        setMessage(null);
         setClosedValue((currentValue) =>
           currentValue && currentValue === lastCalculatedClosedValue
             ? formatInitialMoneyValue(quotedValue)
@@ -83,7 +81,7 @@ function SaleValuesCard(
 
   function calculateDiscount() {
     if (!discountEnabled) {
-      setMessage("Desconto disponível apenas para pagamento à vista.");
+      toast.error("Desconto disponível apenas para pagamento à vista.");
       return;
     }
 
@@ -93,12 +91,12 @@ function SaleValuesCard(
       : 0;
 
     if (!Number.isFinite(quoted) || quoted < 0) {
-      setMessage("Informe um valor orçado válido para calcular.");
+      toast.error("Informe um valor orçado válido para calcular.");
       return;
     }
 
     if (!Number.isFinite(discount) || discount < 0) {
-      setMessage("Informe um desconto válido.");
+      toast.error("Informe um desconto válido.");
       return;
     }
 
@@ -107,7 +105,7 @@ function SaleValuesCard(
 
     setClosedValue(nextClosedValue);
     setLastCalculatedClosedValue(nextClosedValue);
-    setMessage(null);
+    toast.success("Valor fechado calculado.");
   }
 
   return (
@@ -156,11 +154,6 @@ function SaleValuesCard(
             <Calculator />
             Calcular Desconto
           </Button>
-          {message ? (
-            <p className="text-sm text-destructive" role="alert">
-              {message}
-            </p>
-          ) : null}
         </div>
       </CardContent>
     </Card>

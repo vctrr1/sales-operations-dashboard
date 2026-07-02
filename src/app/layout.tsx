@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 const inconsolata = Inconsolata({ subsets: ["latin"], weight: ["500"] });
 
 export const metadata: Metadata = {
-  title: "Emilly Móveis",
+  title: "Emilly Office",
   description: "Sistema interno de vendas e montagem",
 };
 
