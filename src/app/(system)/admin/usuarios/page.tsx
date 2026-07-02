@@ -13,9 +13,10 @@ import { roleLabels, roleOptions } from "@/lib/domain";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/permissions";
 import { updateUserRole } from "../../actions";
+import { DeleteUserButton } from "./components/delete-user-button";
 
 export default async function UsersPage() {
-  await requireRole([UserRole.ADMIN]);
+  const currentUser = await requireRole([UserRole.ADMIN]);
 
   const users = await prisma.user.findMany({
     orderBy: [{ role: "asc" }, { name: "asc" }],
@@ -73,15 +74,23 @@ export default async function UsersPage() {
                   <td className="py-3 pr-3">
                     {new Intl.DateTimeFormat("pt-BR").format(user.createdAt)}
                   </td>
-                  <td className="py-3 pr-3 text-right">
-                    <Button
-                      type="submit"
-                      form={`role-${user.id}`}
-                      className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
-                    >
-                      <Save />
-                      Salvar
-                    </Button>
+                  <td className="py-3 pr-3">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="submit"
+                        form={`role-${user.id}`}
+                        className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+                      >
+                        <Save />
+                        Salvar
+                      </Button>
+                      <DeleteUserButton
+                        userId={user.id}
+                        userName={user.name}
+                        disabled={user.id === currentUser.id}
+                        userRole={user.role}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}

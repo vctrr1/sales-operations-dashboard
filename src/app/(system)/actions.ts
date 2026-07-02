@@ -223,3 +223,19 @@ export async function updateUserRole(formData: FormData) {
 
   revalidatePath("/admin/usuarios");
 }
+
+export async function deleteUser(formData: FormData) {
+  const currentUser = await requireRole([UserRole.ADMIN]);
+
+  const userId = parseRequiredText(formData.get("userId"), "usuário");
+
+  if (userId === currentUser.id) {
+    throw new Error("Você não pode apagar seu próprio usuário.");
+  }
+
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+
+  revalidatePath("/admin/usuarios");
+}
