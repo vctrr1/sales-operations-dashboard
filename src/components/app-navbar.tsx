@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ClipboardList,
@@ -8,6 +9,7 @@ import {
   ChartColumn,
 } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
+import { AppNavLink } from "@/components/app-nav-link";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
 import { roleLabels } from "@/lib/domain";
@@ -27,16 +29,44 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-const navItemClass =
-  "inline-flex h-9 items-center gap-1 rounded-lg px-3 text-md font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground";
-
 export function AppNavbar({ user }: { user: AppUser }) {
   return (
     <header className="sticky top-0 z-20 border-b bg-background/70 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex max-w-375 flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" className="text-xl px-0">
-            <Link href="/">Emilly Móveis</Link>
+          <Button
+            asChild
+            variant="ghost"
+            className="h-auto px-0 hover:bg-transparent"
+          >
+            <Link
+              href="/"
+              aria-label="Emilly Office"
+              className="inline-flex items-center gap-2"
+            >
+              <Image
+                src="/logo.svg"
+                alt=""
+                width={38}
+                height={35}
+                priority
+                className="h-9 w-auto dark:hidden"
+              />
+              <Image
+                src="/logo-white.svg"
+                alt=""
+                width={38}
+                height={35}
+                priority
+                className="hidden h-9 w-auto dark:block"
+              />
+              <span className="inline-flex items-end text-2xl font-black leading-none tracking-normal">
+                <span className="text-foreground">Emilly</span>
+                <span className="ml-1 rounded-tr-2xl bg-red-600 px-1 py-0.5 pb-0.5 text-primary-foreground">
+                  Office.
+                </span>
+              </span>
+            </Link>
           </Button>
           {user.isBootstrapAdmin ? (
             <span className="rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900">
@@ -47,32 +77,32 @@ export function AppNavbar({ user }: { user: AppUser }) {
         <nav className="flex flex-wrap items-center gap-1">
           {canAccessSales(user.role) ? (
             <>
-              <Link className={navItemClass} href="/vendas">
+              <AppNavLink href="/vendas">
                 <ClipboardList className="size-5" />
                 Vendas
-              </Link>
-              <Link className={navItemClass} href="/vendas/dashboard">
+              </AppNavLink>
+              <AppNavLink href="/vendas/dashboard">
                 <ChartColumn className="size-5" />
                 Indicadores
-              </Link>
+              </AppNavLink>
             </>
           ) : null}
           {canAccessOperations(user.role) ? (
-            <Link className={navItemClass} href="/montagem">
+            <AppNavLink href="/montagem">
               <Drill className="size-5" />
               Produção
-            </Link>
+            </AppNavLink>
           ) : null}
           {canAccessAdmin(user.role) ? (
             <>
-              <Link className={navItemClass} href="/financeiro">
+              <AppNavLink href="/financeiro">
                 <Goal className="size-5" />
                 Financeiro
-              </Link>
-              <Link className={navItemClass} href="/admin/usuarios">
+              </AppNavLink>
+              <AppNavLink href="/admin/usuarios">
                 <UserRoundPen className="size-5" />
                 Usuários
-              </Link>
+              </AppNavLink>
             </>
           ) : null}
         </nav>

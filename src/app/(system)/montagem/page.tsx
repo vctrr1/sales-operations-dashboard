@@ -40,7 +40,7 @@ const priorityStyles: Record<Priority, string> = {
   HIGH: "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300",
   MEDIUM:
     "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300",
-  LOW: "border-slate-600 bg-slate-200 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300",
+  LOW: "border-slate-300 bg-slate-100 text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300",
 };
 
 const statusStyles: Record<
@@ -235,11 +235,11 @@ export default async function AssemblyPage() {
                             >
                               <CardHeader className="grid-cols-[1fr_auto] gap-2">
                                 <div className="min-w-0">
-                                  <CardTitle className="!text-base">
+                                  <CardTitle className="text-base!">
                                     #{assembly.saleOrder.orderNumber}{" "}
                                     {assembly.saleOrder.customerName}
                                   </CardTitle>
-                                  <CardDescription className="!text-base">
+                                  <CardDescription className="text-base!">
                                     {assembly.saleOrder.sellerName} ·{" "}
                                     {
                                       logisticsTypeLabels[
