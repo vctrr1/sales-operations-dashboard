@@ -39,7 +39,7 @@ export default async function UsersPage() {
       </section>
       <Card>
         <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-base">
+          <table className="w-full min-w-180 text-left text-base">
             <thead className="border-b text-sm uppercase text-muted-foreground">
               <tr>
                 <th className="py-2 pr-3">Nome</th>
