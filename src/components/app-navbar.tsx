@@ -42,7 +42,7 @@ export function AppNavbar({ user }: { user: AppUser }) {
             <Link
               href="/"
               aria-label="Emilly Office"
-              className="inline-flex items-center gap-2"
+              className="inline-flex items-center"
             >
               <Image
                 src="/logo.svg"
@@ -150,7 +150,7 @@ export function PendingAccess({ user }: { user: AppUser }) {
           </div>
           <LogoutButton />
         </div>
-        <p className="text-sm leading-6 text-muted-foreground">
+        <p className="text-base leading-6 text-muted-foreground">
           Sua conta já foi criada. Um administrador precisa liberar seu perfil
           para acessar o sistema.
         </p>

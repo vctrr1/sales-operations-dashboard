@@ -83,7 +83,7 @@ export function LoginForm({
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="m@examplo.com"
                   className="text-base md:text-base"
                   required
                 />
