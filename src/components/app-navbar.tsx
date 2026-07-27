@@ -76,10 +76,6 @@ export function AppNavbar({ user }: { user: AppUser }) {
           ) : null}
         </div>
         <nav className="flex flex-wrap items-center gap-1">
-          <AppNavLink href="/calendario">
-            <CalendarDays className="size-5" />
-            Calendário
-          </AppNavLink>
           {canAccessSales(user.role) ? (
             <>
               <AppNavLink href="/vendas">
@@ -92,6 +88,10 @@ export function AppNavbar({ user }: { user: AppUser }) {
               </AppNavLink>
             </>
           ) : null}
+          <AppNavLink href="/calendario">
+            <CalendarDays className="size-5" />
+            Calendário
+          </AppNavLink>
           {canAccessOperations(user.role) ? (
             <AppNavLink href="/montagem">
               <Drill className="size-5" />
