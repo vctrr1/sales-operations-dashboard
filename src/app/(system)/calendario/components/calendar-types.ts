@@ -1,5 +1,6 @@
 import type {
   AssemblyStatus,
+  CalendarEventType,
   LogisticsType,
   Priority,
   ProductCategory,
@@ -26,4 +27,15 @@ export type CalendarOrder = {
       description: string;
     }[];
   };
+};
+
+export type CalendarEvent = {
+  id: string;
+  title: string;
+  notes: string | null;
+  eventDate: Date;
+  type: CalendarEventType;
+  createdBy: {
+    name: string;
+  } | null;
 };
