@@ -74,6 +74,11 @@ enum BudgetOrigin {
   PREVIOUS_MONTH
 }
 
+enum CalendarEventType {
+  SCHEDULE
+  OTHER
+}
+
 model User {
   id            String    @id
   name          String
@@ -86,6 +91,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   saleOrders    SaleOrder[]
+  calendarEvents CalendarEvent[]
 
   @@unique([email])
   @@map("user")
@@ -209,4 +215,20 @@ model MonthlyGoal {
 
   @@unique([month, sellerName])
   @@index([month])
+}
+
+model CalendarEvent {
+  id          String            @id @default(cuid())
+  title       String
+  notes       String?
+  eventDate   DateTime
+  type        CalendarEventType
+  createdById String?
+  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([eventDate])
+  @@index([type, eventDate])
+  @@index([createdById])
 }

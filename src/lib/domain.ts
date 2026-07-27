@@ -1,6 +1,7 @@
 import {
   AssemblyStatus,
   BudgetOrigin,
+  CalendarEventType,
   CommercialStatus,
   CustomerOrigin,
   LogisticsType,
@@ -74,6 +75,11 @@ export const budgetOriginLabels: Record<BudgetOrigin, string> = {
   PREVIOUS_MONTH: "Proveniente de outro mês",
 };
 
+export const calendarEventTypeLabels: Record<CalendarEventType, string> = {
+  SCHEDULE: "Agendamento",
+  OTHER: "Outros",
+};
+
 export const roleOptions = Object.values(UserRole);
 export const commercialStatusOptions = Object.values(CommercialStatus);
 export const paymentMethodOptions = Object.values(PaymentMethod);
@@ -83,6 +89,7 @@ export const assemblyStatusOptions = Object.values(AssemblyStatus);
 export const priorityOptions = Object.values(Priority);
 export const customerOriginOptions = Object.values(CustomerOrigin);
 export const budgetOriginOptions = Object.values(BudgetOrigin);
+export const calendarEventTypeOptions = Object.values(CalendarEventType);
 
 export const discountedPaymentMethods = new Set<PaymentMethod>([
   PaymentMethod.BOLETO,
