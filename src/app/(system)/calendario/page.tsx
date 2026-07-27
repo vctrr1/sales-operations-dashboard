@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Funnel,
-  PlusIcon,
 } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,7 @@ export default async function CalendarPage({
   const month = parseMonth(params.month);
   const { gridStart, gridEnd } = calendarGridRange(month.start);
 
-  const [scheduledOrders, unscheduledOrders] = await Promise.all([
+  const [scheduledOrders, unscheduledOrders, calendarEvents] = await Promise.all([
     prisma.assemblyOrder.findMany({
       where: {
         scheduledDate: {
@@ -78,6 +77,20 @@ export default async function CalendarPage({
         },
       },
       orderBy: [{ priority: "asc" }, { requestedAt: "asc" }],
+    }),
+    prisma.calendarEvent.findMany({
+      where: {
+        eventDate: {
+          gte: gridStart,
+          lt: gridEnd,
+        },
+      },
+      include: {
+        createdBy: {
+          select: { name: true },
+        },
+      },
+      orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
     }),
   ]);
 
@@ -139,10 +152,15 @@ export default async function CalendarPage({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-xl font-medium">{monthTitle(month.key)}</h2>
           <p className="text-base text-muted-foreground">
-            {scheduledOrders.length} ordens programadas no período visível
+            {scheduledOrders.length} ordens e {calendarEvents.length} eventos
+            no período visível
           </p>
         </div>
-        <CalendarMonthGrid monthStart={month.start} orders={scheduledOrders} />
+        <CalendarMonthGrid
+          monthStart={month.start}
+          orders={scheduledOrders}
+          events={calendarEvents}
+        />
       </section>
 
       <UnscheduledOrdersList orders={unscheduledOrders} />

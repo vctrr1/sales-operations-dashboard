@@ -1,5 +1,6 @@
+import { CalendarEventCard } from "./calendar-event-card";
 import { CalendarOrderCard } from "./calendar-order-card";
-import type { CalendarOrder } from "./calendar-types";
+import type { CalendarEvent, CalendarOrder } from "./calendar-types";
 import { cn } from "@/lib/utils";
 
 const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -54,12 +55,15 @@ export function calendarGridRange(monthStart: Date) {
 export function CalendarMonthGrid({
   monthStart,
   orders,
+  events,
 }: {
   monthStart: Date;
   orders: CalendarOrder[];
+  events: CalendarEvent[];
 }) {
   const days = buildCalendarDays(monthStart);
   const ordersByDate = new Map<string, CalendarOrder[]>();
+  const eventsByDate = new Map<string, CalendarEvent[]>();
 
   for (const order of orders) {
     if (!order.scheduledDate) continue;
@@ -68,6 +72,13 @@ export function CalendarMonthGrid({
     const dateOrders = ordersByDate.get(key) ?? [];
     dateOrders.push(order);
     ordersByDate.set(key, dateOrders);
+  }
+
+  for (const event of events) {
+    const key = utcDateKey(event.eventDate);
+    const dateEvents = eventsByDate.get(key) ?? [];
+    dateEvents.push(event);
+    eventsByDate.set(key, dateEvents);
   }
 
   return (
@@ -86,6 +97,8 @@ export function CalendarMonthGrid({
       <div className="grid grid-cols-1 md:grid-cols-7">
         {days.map((day) => {
           const dateOrders = ordersByDate.get(day.key) ?? [];
+          const dateEvents = eventsByDate.get(day.key) ?? [];
+          const dateItemsCount = dateOrders.length + dateEvents.length;
 
           return (
             <div
@@ -105,20 +118,23 @@ export function CalendarMonthGrid({
                 >
                   {day.dayNumber}
                 </span>
-                {dateOrders.length > 0 ? (
+                {dateItemsCount > 0 ? (
                   <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                    {dateOrders.length}
+                    {dateItemsCount}
                   </span>
                 ) : null}
               </div>
 
               <div className="grid gap-2">
-                {dateOrders.slice(0, 4).map((order) => (
+                {dateEvents.slice(0, 2).map((event) => (
+                  <CalendarEventCard key={event.id} event={event} />
+                ))}
+                {dateOrders.slice(0, Math.max(4 - dateEvents.length, 0)).map((order) => (
                   <CalendarOrderCard key={order.id} order={order} />
                 ))}
-                {dateOrders.length > 4 ? (
+                {dateItemsCount > 4 ? (
                   <div className="rounded-md border border-dashed p-2 text-sm text-muted-foreground">
-                    +{dateOrders.length - 4} ordens neste dia
+                    +{dateItemsCount - 4} itens neste dia
                   </div>
                 ) : null}
               </div>
