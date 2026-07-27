@@ -23,6 +23,17 @@ const statusAccentStyles = {
   DELIVERED: "border-l-emerald-500",
 } satisfies Record<CalendarOrder["status"], string>;
 
+const statusBadgeStyles = {
+  TO_SCHEDULE: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
+  NO_ASSEMBLY:
+    "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+  ASSEMBLED:
+    "bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300",
+  FINISHED: "bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300",
+  DELIVERED:
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+} satisfies Record<CalendarOrder["status"], string>;
+
 export function CalendarOrderCard({ order }: { order: CalendarOrder }) {
   return (
     <article
@@ -52,8 +63,14 @@ export function CalendarOrderCard({ order }: { order: CalendarOrder }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-        <span>{assemblyStatusLabels[order.status]}</span>
-        <span>·</span>
+        <span
+          className={cn(
+            "rounded-md px-1.5 py-0.5 text-xs font-medium",
+            statusBadgeStyles[order.status],
+          )}
+        >
+          {assemblyStatusLabels[order.status]}
+        </span>
         <span>{money(order.saleOrder.closedAmount)}</span>
       </div>
 
