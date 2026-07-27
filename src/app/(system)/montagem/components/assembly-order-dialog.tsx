@@ -124,7 +124,10 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
             </section>
           ) : null}
 
-          <form action={updateAssemblyOrder} className="grid gap-3 rounded-lg border p-3">
+          <form
+            action={updateAssemblyOrder}
+            className="grid gap-3 rounded-lg border p-3"
+          >
             <input type="hidden" name="id" value={assembly.id} />
             <div className="grid gap-3 md:grid-cols-2">
               <Select name="status" defaultValue={assembly.status}>
@@ -133,7 +136,11 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {assemblyStatusOptions.map((option) => (
-                    <SelectItem key={option} value={option} className="text-base">
+                    <SelectItem
+                      key={option}
+                      value={option}
+                      className="text-base"
+                    >
                       {assemblyStatusLabels[option]}
                     </SelectItem>
                   ))}
@@ -145,7 +152,11 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {priorityOptions.map((option) => (
-                    <SelectItem key={option} value={option} className="text-base">
+                    <SelectItem
+                      key={option}
+                      value={option}
+                      className="text-base"
+                    >
                       {priorityLabels[option]}
                     </SelectItem>
                   ))}
@@ -164,7 +175,7 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
               className={textareaClass}
               aria-label="Prazo ou observação"
             />
-            <Button type="submit" size="sm" variant="outline">
+            <Button type="submit" className="text-base" variant="outline">
               <Save />
               Salvar alterações
             </Button>
