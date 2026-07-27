@@ -7,6 +7,7 @@ import {
   UserKey,
   Drill,
   ChartColumn,
+  CalendarDays,
 } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { AppNavLink } from "@/components/app-nav-link";
@@ -75,6 +76,10 @@ export function AppNavbar({ user }: { user: AppUser }) {
           ) : null}
         </div>
         <nav className="flex flex-wrap items-center gap-1">
+          <AppNavLink href="/calendario">
+            <CalendarDays className="size-5" />
+            Calendário
+          </AppNavLink>
           {canAccessSales(user.role) ? (
             <>
               <AppNavLink href="/vendas">
