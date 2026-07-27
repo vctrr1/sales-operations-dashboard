@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, ChevronRight, Funnel } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Funnel,
+  PlusIcon,
+} from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +17,7 @@ import {
   calendarGridRange,
 } from "./components/calendar-month-grid";
 import { UnscheduledOrdersList } from "./components/unscheduled-orders-list";
+import AddItemCalendarDialog from "./components/add-item-calendar-dialog";
 
 type SearchParams = Promise<{ month?: string }>;
 
@@ -124,6 +131,7 @@ export default async function CalendarPage({
               Filtrar
             </Button>
           </form>
+          <AddItemCalendarDialog />
         </div>
       </section>
 
