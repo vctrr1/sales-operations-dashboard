@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import {
   AssemblyStatus,
   BudgetOrigin,
+  CalendarEventType,
   CommercialStatus,
   CustomerOrigin,
   LogisticsType,
@@ -238,4 +239,58 @@ export async function deleteUser(formData: FormData) {
   });
 
   revalidatePath("/admin/usuarios");
+}
+
+export async function saveCalendarEvent(formData: FormData) {
+  const user = await requireRole([
+    UserRole.SALES,
+    UserRole.OPERATION,
+    UserRole.ADMIN,
+  ]);
+
+  const id = parseOptionalText(formData.get("id"));
+  const eventDate = parseDateField(formData.get("eventDate"));
+
+  if (!eventDate) {
+    throw new Error("Informe a data da programação.");
+  }
+
+  const data = {
+    title: parseRequiredText(formData.get("title"), "título"),
+    notes: parseOptionalText(formData.get("notes")),
+    eventDate,
+    type: enumValue(
+      CalendarEventType,
+      formData.get("type"),
+      CalendarEventType.SCHEDULE,
+    ),
+  };
+
+  if (id) {
+    await prisma.calendarEvent.update({
+      where: { id },
+      data,
+    });
+  } else {
+    await prisma.calendarEvent.create({
+      data: {
+        ...data,
+        createdById: user.id,
+      },
+    });
+  }
+
+  revalidatePath("/calendario");
+}
+
+export async function deleteCalendarEvent(formData: FormData) {
+  await requireRole([UserRole.SALES, UserRole.OPERATION, UserRole.ADMIN]);
+
+  const id = parseRequiredText(formData.get("id"), "programação");
+
+  await prisma.calendarEvent.delete({
+    where: { id },
+  });
+
+  revalidatePath("/calendario");
 }
