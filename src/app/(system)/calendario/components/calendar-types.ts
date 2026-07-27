@@ -4,6 +4,7 @@ import type {
   Priority,
   ProductCategory,
 } from "@/generated/prisma/enums";
+import type { Decimal } from "@prisma/client/runtime/client";
 
 export type CalendarOrder = {
   id: string;
@@ -17,7 +18,7 @@ export type CalendarOrder = {
     sellerName: string;
     logisticsType: LogisticsType;
     productCategory: ProductCategory;
-    closedAmount: unknown;
+    closedAmount: Decimal | number | string | null;
     deliveryAddress: string | null;
     items: {
       id: string;
