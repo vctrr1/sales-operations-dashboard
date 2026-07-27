@@ -1,3 +1,4 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CalendarEventCard } from "./calendar-event-card";
 import { CalendarOrderCard } from "./calendar-order-card";
 import type { CalendarEvent, CalendarOrder } from "./calendar-types";
@@ -104,7 +105,7 @@ export function CalendarMonthGrid({
             <div
               key={day.key}
               className={cn(
-                "min-h-42 border-b p-2 md:border-r",
+                "flex min-h-42 flex-col border-b p-2 md:h-60 md:border-r",
                 !day.inCurrentMonth && "bg-muted/30 text-muted-foreground",
                 day.isToday && "bg-primary/5",
               )}
@@ -125,19 +126,16 @@ export function CalendarMonthGrid({
                 ) : null}
               </div>
 
-              <div className="grid gap-2">
-                {dateEvents.slice(0, 2).map((event) => (
-                  <CalendarEventCard key={event.id} event={event} />
-                ))}
-                {dateOrders.slice(0, Math.max(4 - dateEvents.length, 0)).map((order) => (
-                  <CalendarOrderCard key={order.id} order={order} />
-                ))}
-                {dateItemsCount > 4 ? (
-                  <div className="rounded-md border border-dashed p-2 text-sm text-muted-foreground">
-                    +{dateItemsCount - 4} itens neste dia
-                  </div>
-                ) : null}
-              </div>
+              <ScrollArea className="-mr-1 min-h-0 flex-1">
+                <div className="grid gap-2 pr-2">
+                  {dateEvents.map((event) => (
+                    <CalendarEventCard key={event.id} event={event} />
+                  ))}
+                  {dateOrders.map((order) => (
+                    <CalendarOrderCard key={order.id} order={order} />
+                  ))}
+                </div>
+              </ScrollArea>
             </div>
           );
         })}
