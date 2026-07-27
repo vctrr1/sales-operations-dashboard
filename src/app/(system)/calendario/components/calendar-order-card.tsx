@@ -38,28 +38,27 @@ export function CalendarOrderCard({ order }: { order: CalendarOrder }) {
   return (
     <article
       className={cn(
-        "grid gap-1 rounded-md border border-l-4 bg-background/80 p-2 text-base shadow-sm",
+        "relative grid gap-1 rounded-md border border-l-4 bg-background/80 p-2 text-base shadow-sm",
         statusAccentStyles[order.status],
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate font-medium">
-            #{order.saleOrder.orderNumber} {order.saleOrder.customerName}
-          </p>
-          <p className="truncate text-sm text-muted-foreground">
-            {order.saleOrder.sellerName} ·{" "}
-            {logisticsTypeLabels[order.saleOrder.logisticsType]}
-          </p>
-        </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-md border px-1.5 py-0.5 text-xs font-medium",
-            priorityStyles[order.priority],
-          )}
-        >
-          {priorityLabels[order.priority]}
-        </span>
+      <span
+        className={cn(
+          "absolute right-2 top-2 rounded-md border px-1.5 py-0.5 text-xs font-medium",
+          priorityStyles[order.priority],
+        )}
+      >
+        {priorityLabels[order.priority]}
+      </span>
+
+      <div className="min-w-0 pr-13">
+        <p className="truncate font-medium">
+          #{order.saleOrder.orderNumber} {order.saleOrder.customerName}
+        </p>
+        <p className="truncate text-sm text-muted-foreground">
+          {order.saleOrder.sellerName} ·{" "}
+          {logisticsTypeLabels[order.saleOrder.logisticsType]}
+        </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
@@ -77,7 +76,9 @@ export function CalendarOrderCard({ order }: { order: CalendarOrder }) {
       {order.saleOrder.deliveryAddress ? (
         <div className="flex items-start gap-1 text-sm text-muted-foreground">
           <MapPin className="mt-0.5 size-3.5 shrink-0" />
-          <span className="line-clamp-1">{order.saleOrder.deliveryAddress}</span>
+          <span className="line-clamp-1">
+            {order.saleOrder.deliveryAddress}
+          </span>
         </div>
       ) : null}
 
