@@ -64,12 +64,12 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
   const dateText = displayDate(assembly.scheduledDate);
 
   return (
-    <DialogContent className="max-h-[calc(100dvh-2rem)] !text-base sm:max-w-2xl">
+    <DialogContent className="max-h-[calc(100dvh-2rem)] text-base! sm:max-w-2xl">
       <DialogHeader>
-        <DialogTitle className="!text-lg">
+        <DialogTitle className="text-lg!">
           #{assembly.saleOrder.orderNumber} {assembly.saleOrder.customerName}
         </DialogTitle>
-        <DialogDescription className="!text-base">
+        <DialogDescription className="text-base!">
           {assembly.saleOrder.sellerName} ·{" "}
           {logisticsTypeLabels[assembly.saleOrder.logisticsType]} ·{" "}
           {assemblyStatusLabels[assembly.status]}

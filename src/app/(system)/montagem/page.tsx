@@ -202,7 +202,7 @@ export default async function AssemblyPage() {
               className={cn("min-h-0 border ring-0", styles.column)}
             >
               <CardHeader className="grid-cols-[1fr_auto] items-center">
-                <CardTitle className="flex items-center gap-2 !text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg!">
                   <span className={cn("size-2.5 rounded-full", styles.dot)} />
                   {assemblyStatusLabels[status]}
                 </CardTitle>
