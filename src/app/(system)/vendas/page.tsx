@@ -11,11 +11,7 @@ import {
 } from "@/components/ui/card";
 import { FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  RadioGroup,
-  SelectField,
-  FormField,
-} from "./components/group-componets";
+import { RadioGroup, FormField } from "./components/group-componets";
 import {
   budgetOriginLabels,
   budgetOriginOptions,
@@ -42,6 +38,7 @@ import { saveSaleOrder } from "../actions";
 import { Textarea } from "@/components/ui/textarea";
 import { SaleGeneralInfoCard } from "./components/sale-general-info-card";
 import { SalePaymentValuesSection } from "./components/sale-payment-values-section";
+import { ProductCategoryMultiSelect } from "./components/product-category-multi-select";
 
 const cardTitleClass = "text-lg";
 const formTextClass =
@@ -141,19 +138,19 @@ export default async function SalesPage({
             paymentMethod={editingOrder?.paymentMethod}
           />
 
-          <Card className={` lg:col-span-3`}>
+          <Card className="min-w-0 lg:col-span-3">
             <CardHeader>
               <CardTitle className={cardTitleClass}>
                 Produto e Logística
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <SelectField
-                name="productCategory"
+            <CardContent className="grid min-w-0 gap-4">
+              <ProductCategoryMultiSelect
+                name="productCategories"
                 label="Categoria do Produto:"
                 options={productCategoryOptions}
                 labels={productCategoryLabels}
-                defaultValue={editingOrder?.productCategory}
+                defaultValues={editingOrder?.productCategories ?? []}
               />
               <RadioGroup
                 name="logisticsType"

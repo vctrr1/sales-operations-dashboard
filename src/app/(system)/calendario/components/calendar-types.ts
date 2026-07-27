@@ -18,7 +18,7 @@ export type CalendarOrder = {
     customerName: string;
     sellerName: string;
     logisticsType: LogisticsType;
-    productCategory: ProductCategory;
+    productCategories: ProductCategory[];
     closedAmount: Decimal | number | string | null;
     deliveryAddress: string | null;
     items: {

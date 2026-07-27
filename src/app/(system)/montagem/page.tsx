@@ -169,6 +169,14 @@ function getDateTone(date: Date | null) {
   };
 }
 
+function formatProductCategories(
+  categories: (keyof typeof productCategoryLabels)[],
+) {
+  return categories
+    .map((category) => productCategoryLabels[category])
+    .join(", ");
+}
+
 export default async function AssemblyPage() {
   await requireRole([UserRole.OPERATION, UserRole.ADMIN]);
 
@@ -283,11 +291,9 @@ export default async function AssemblyPage() {
                                   </div>
                                 ) : null}
                                 <p className="text-base text-muted-foreground">
-                                  {
-                                    productCategoryLabels[
-                                      assembly.saleOrder.productCategory
-                                    ]
-                                  }
+                                  {formatProductCategories(
+                                    assembly.saleOrder.productCategories,
+                                  )}
                                 </p>
                                 <ul className="grid gap-1 text-base">
                                   {assembly.saleOrder.items

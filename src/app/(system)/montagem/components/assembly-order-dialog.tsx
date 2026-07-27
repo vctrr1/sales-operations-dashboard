@@ -36,6 +36,12 @@ import { updateAssemblyOrder } from "../../actions";
 const textareaClass =
   "min-h-16 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30";
 
+function formatProductCategories(categories: ProductCategory[]) {
+  return categories
+    .map((category) => productCategoryLabels[category])
+    .join(", ");
+}
+
 type AssemblyOrderDialogProps = {
   assembly: {
     id: string;
@@ -48,7 +54,7 @@ type AssemblyOrderDialogProps = {
       customerName: string;
       sellerName: string;
       logisticsType: LogisticsType;
-      productCategory: ProductCategory;
+      productCategories: ProductCategory[];
       deliveryAddress: string | null;
       notes: string | null;
       items: {
@@ -90,7 +96,7 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
             <div>
               <p className="text-muted-foreground">Categoria</p>
               <p className="font-medium">
-                {productCategoryLabels[assembly.saleOrder.productCategory]}
+                {formatProductCategories(assembly.saleOrder.productCategories)}
               </p>
             </div>
             <div>

@@ -38,7 +38,7 @@ export function RadioGroup<T extends string>({
         {options.map((option) => (
           <label
             key={option}
-            className="flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border border-input px-2 py-1 text-base transition-colors has-checked:border-primary/50 has-checked:bg-primary/5 hover:bg-muted/50 dark:has-checked:bg-primary/10"
+            className="flex min-h-8 min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-input px-2 py-1 text-base transition-colors has-checked:border-primary/50 has-checked:bg-primary/5 hover:bg-muted/50 dark:has-checked:bg-primary/10"
           >
             <input
               type="radio"
@@ -52,7 +52,7 @@ export function RadioGroup<T extends string>({
                 : { defaultChecked: option === checkedValue })}
               className="size-4 accent-primary"
             />
-            <span className="leading-snug">{labels[option]}</span>
+            <span className="min-w-0 leading-snug">{labels[option]}</span>
           </label>
         ))}
       </div>

@@ -204,8 +204,10 @@ export function SalesAdminDashboard({
       <section className="grid gap-4 xl:grid-cols-2">
         <AdminGeneralGoalCard metric={generalMetric} />
         <AdminCompositionDonutCard
-          title="Categorias mais Vendidas"
+          title="Categorias nas Vendas"
           data={categoryData}
+          valueType="quantity"
+          centerLabel="Categorias"
         />
       </section>
 

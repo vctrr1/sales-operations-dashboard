@@ -55,6 +55,24 @@ function parseItems(formData: FormData) {
   return items;
 }
 
+function parseProductCategories(formData: FormData) {
+  const categories = formData
+    .getAll("productCategories")
+    .filter(
+      (value): value is ProductCategory =>
+        typeof value === "string" &&
+        Object.values(ProductCategory).includes(value as ProductCategory),
+    );
+
+  const uniqueCategories = Array.from(new Set(categories));
+
+  if (uniqueCategories.length === 0) {
+    throw new Error("Informe ao menos uma categoria do produto.");
+  }
+
+  return uniqueCategories;
+}
+
 export async function saveSaleOrder(formData: FormData) {
   const user = await requireRole([UserRole.SALES, UserRole.ADMIN]);
   const id = parseOptionalText(formData.get("id"));
@@ -66,6 +84,7 @@ export async function saveSaleOrder(formData: FormData) {
   const quoteDate = parseDateField(formData.get("quoteDate")) ?? new Date();
   const closedAt = parseDateField(formData.get("closedAt"));
   const items = parseItems(formData);
+  const productCategories = parseProductCategories(formData);
   const paymentMethod =
     commercialStatus === CommercialStatus.CLOSED
       ? enumValue(PaymentMethod, formData.get("paymentMethod"), PaymentMethod.CARD)
@@ -88,11 +107,7 @@ export async function saveSaleOrder(formData: FormData) {
         ? parseMoneyField(formData.get("discountPercent"))
         : null,
     paymentMethod,
-    productCategory: enumValue(
-      ProductCategory,
-      formData.get("productCategory"),
-      ProductCategory.CADEIRAS,
-    ),
+    productCategories,
     logisticsType: enumValue(LogisticsType, formData.get("logisticsType"), LogisticsType.DELIVERY),
     deliveryAddress: parseOptionalText(formData.get("deliveryAddress")),
     customerName: parseRequiredText(formData.get("customerName"), "cliente"),

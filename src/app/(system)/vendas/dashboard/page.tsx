@@ -1,4 +1,8 @@
-import { AssemblyStatus, UserRole } from "@/generated/prisma/enums";
+import {
+  AssemblyStatus,
+  ProductCategory,
+  UserRole,
+} from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SalesAdminDashboard } from "../components/sales-admin-dashboard";
@@ -130,40 +134,6 @@ function buildClosingChartData(
   });
 }
 
-function buildValueComposition(
-  orders: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>,
-  range: { start: Date; end: Date },
-  getKey: (
-    order: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>[number],
-  ) => string,
-  labels: Record<string, string>,
-) {
-  const totals = new Map<string, number>();
-
-  for (const order of orders) {
-    if (
-      order.commercialStatus !== "CLOSED" ||
-      !inRange(order.closedAt, range.start, range.end)
-    ) {
-      continue;
-    }
-
-    const key = getKey(order);
-    totals.set(
-      key,
-      (totals.get(key) ?? 0) + toDecimalNumber(order.closedAmount),
-    );
-  }
-
-  return Array.from(totals.entries())
-    .map(([key, value]) => ({
-      key,
-      label: labels[key] ?? key,
-      value,
-    }))
-    .sort((a, b) => b.value - a.value) satisfies SalesCompositionItem[];
-}
-
 function buildCountComposition(
   orders: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>,
   range: { start: Date; end: Date },
@@ -190,6 +160,37 @@ function buildCountComposition(
     .map(([key, value]) => ({
       key,
       label: labels[key] ?? key,
+      value,
+    }))
+    .sort((a, b) => b.value - a.value) satisfies SalesCompositionItem[];
+}
+
+function buildCategoryIncidenceComposition(
+  orders: Awaited<ReturnType<typeof prisma.saleOrder.findMany>>,
+  range: { start: Date; end: Date },
+) {
+  const totals = new Map<ProductCategory, number>(
+    Object.values(ProductCategory).map((category) => [category, 0]),
+  );
+
+  for (const order of orders) {
+    if (
+      order.commercialStatus !== "CLOSED" ||
+      !inRange(order.closedAt, range.start, range.end)
+    ) {
+      continue;
+    }
+
+    for (const category of order.productCategories) {
+      totals.set(category, (totals.get(category) ?? 0) + 1);
+    }
+  }
+
+  return Array.from(totals.entries())
+    .filter(([, value]) => value > 0)
+    .map(([key, value]) => ({
+      key,
+      label: productCategoryLabels[key],
       value,
     }))
     .sort((a, b) => b.value - a.value) satisfies SalesCompositionItem[];
@@ -364,12 +365,7 @@ export default async function SalesDashboardPage({
     ),
   );
   const closingChartData = buildClosingChartData(closingChartOrders, month);
-  const categoryData = buildValueComposition(
-    orders,
-    month,
-    (order) => order.productCategory,
-    productCategoryLabels,
-  );
+  const categoryData = buildCategoryIncidenceComposition(orders, month);
   const customerOriginData = buildCountComposition(
     orders,
     month,
