@@ -18,7 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { calendarEventTypeLabels, calendarEventTypeOptions } from "@/lib/domain";
+import {
+  calendarEventTypeLabels,
+  calendarEventTypeOptions,
+} from "@/lib/domain";
 import { dateInputValue } from "@/lib/format";
 import { PlusIcon, Save } from "lucide-react";
 import { saveCalendarEvent } from "../../actions";
@@ -45,10 +48,10 @@ function AddItemCalendarDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-xl text-center">
             {isEditing ? "Editar programação" : "Adicionar programação"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-center text-base">
             Adicione agendamentos, retiradas, visitas técnicas ou outras
             observações do calendário.
           </DialogDescription>
@@ -58,7 +61,7 @@ function AddItemCalendarDialog({
           <input type="hidden" name="id" value={event?.id ?? ""} />
           <div className="grid gap-2">
             <label className="text-base text-muted-foreground" htmlFor="title">
-              Título
+              Título:
             </label>
             <Input
               id="title"
@@ -74,7 +77,7 @@ function AddItemCalendarDialog({
                 className="text-base text-muted-foreground"
                 htmlFor="eventDate"
               >
-                Data
+                Data:
               </label>
               <Input
                 id="eventDate"
@@ -87,7 +90,7 @@ function AddItemCalendarDialog({
             </div>
             <div className="grid gap-2">
               <label className="text-base text-muted-foreground">
-                Categoria
+                Categoria:
               </label>
               <Select
                 name="type"
@@ -109,7 +112,7 @@ function AddItemCalendarDialog({
           </div>
           <div className="grid gap-2">
             <label className="text-base text-muted-foreground" htmlFor="notes">
-              Observações
+              Observações:
             </label>
             <Textarea
               id="notes"
@@ -120,7 +123,7 @@ function AddItemCalendarDialog({
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+              <Button type="button" className="text-base" variant="destructive">
                 Cancelar
               </Button>
             </DialogClose>

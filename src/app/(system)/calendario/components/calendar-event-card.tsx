@@ -1,4 +1,4 @@
-import { CalendarClock, Trash2 } from "lucide-react";
+import { CalendarClock, SquarePen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -61,11 +61,11 @@ export function CalendarEventCard({ event }: { event: CalendarEvent }) {
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg">
             <CalendarClock className="size-5" />
             {event.title}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-base">
             {calendarEventTypeLabels[event.type]} ·{" "}
             {event.createdBy?.name ?? "Sem responsável"}
           </DialogDescription>
@@ -80,20 +80,16 @@ export function CalendarEventCard({ event }: { event: CalendarEvent }) {
         <DialogFooter>
           <form action={deleteCalendarEvent}>
             <input type="hidden" name="id" value={event.id} />
-            <Button type="submit" variant="destructive">
+            <Button type="submit" variant="destructive" className="text-base">
               <Trash2 />
               Apagar
             </Button>
           </form>
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              Fechar
-            </Button>
-          </DialogClose>
           <AddItemCalendarDialog
             event={event}
             trigger={
-              <Button className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50">
+              <Button className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50 text-base">
+                <SquarePen />
                 Editar
               </Button>
             }
