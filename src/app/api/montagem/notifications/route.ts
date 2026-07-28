@@ -24,6 +24,9 @@ export async function GET(request: NextRequest) {
       requestedAt: {
         gt: afterDate,
       },
+      saleOrder: {
+        commercialStatus: "CLOSED",
+      },
     },
     select: {
       id: true,

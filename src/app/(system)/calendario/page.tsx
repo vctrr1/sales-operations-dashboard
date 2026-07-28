@@ -57,6 +57,9 @@ export default async function CalendarPage({
           gte: gridStart,
           lt: gridEnd,
         },
+        saleOrder: {
+          commercialStatus: "CLOSED",
+        },
       },
       include: {
         saleOrder: {
@@ -70,7 +73,12 @@ export default async function CalendarPage({
       ],
     }),
     prisma.assemblyOrder.findMany({
-      where: { scheduledDate: null },
+      where: {
+        scheduledDate: null,
+        saleOrder: {
+          commercialStatus: "CLOSED",
+        },
+      },
       include: {
         saleOrder: {
           include: { items: true },

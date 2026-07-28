@@ -196,6 +196,11 @@ export default async function AssemblyPage() {
   const user = await requireRole([UserRole.OPERATION, UserRole.ADMIN]);
 
   const assemblyOrders = await prisma.assemblyOrder.findMany({
+    where: {
+      saleOrder: {
+        commercialStatus: "CLOSED",
+      },
+    },
     include: {
       saleOrder: {
         include: { items: true },

@@ -171,6 +171,12 @@ export async function saveSaleOrder(formData: FormData) {
     const scheduleNotes = parseOptionalText(formData.get("scheduleNotes"));
 
     await prisma.$transaction(async (tx) => {
+      const previousSaleOrder = id
+        ? await tx.saleOrder.findUnique({
+            where: { id },
+            select: { commercialStatus: true },
+          })
+        : null;
       const saleOrder = id
         ? await tx.saleOrder.update({
             where: { id },
@@ -186,30 +192,28 @@ export async function saveSaleOrder(formData: FormData) {
             data: {
               ...data,
               createdById: user.id,
-              items: { createMany: { data: items } },
-            },
-          });
+            items: { createMany: { data: items } },
+          },
+        });
 
-      if (commercialStatus === CommercialStatus.CLOSED) {
-        await tx.assemblyOrder.upsert({
-          where: { saleOrderId: saleOrder.id },
-          create: {
-            saleOrderId: saleOrder.id,
-            priority,
-            scheduledDate,
-            scheduleNotes,
-          },
-          update: {
-            priority,
-            scheduledDate,
-            scheduleNotes,
-          },
-        });
-      } else {
-        await tx.assemblyOrder.deleteMany({
-          where: { saleOrderId: saleOrder.id },
-        });
-      }
+      await tx.assemblyOrder.upsert({
+        where: { saleOrderId: saleOrder.id },
+        create: {
+          saleOrderId: saleOrder.id,
+          priority,
+          scheduledDate,
+          scheduleNotes,
+        },
+        update: {
+          priority,
+          scheduledDate,
+          scheduleNotes,
+          ...(commercialStatus === CommercialStatus.CLOSED &&
+          previousSaleOrder?.commercialStatus !== CommercialStatus.CLOSED
+            ? { requestedAt: new Date() }
+            : {}),
+        },
+      });
     });
 
     revalidatePath("/vendas");

@@ -334,6 +334,11 @@ export default async function SalesDashboardPage({
           }),
       isAdmin
         ? prisma.assemblyOrder.findMany({
+            where: {
+              saleOrder: {
+                commercialStatus: "CLOSED",
+              },
+            },
             orderBy: [
               { status: "asc" },
               { scheduledDate: "asc" },

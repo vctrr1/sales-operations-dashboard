@@ -53,11 +53,20 @@ export default async function FinancePage({
   const [dailyOrders, goals, salesUsers] = await Promise.all([
     prisma.assemblyOrder.findMany({
       where: {
-        OR: [
-          { scheduledDate: { gte: day.start, lt: day.end } },
+        AND: [
           {
-            scheduledDate: null,
-            requestedAt: { gte: day.start, lt: day.end },
+            saleOrder: {
+              commercialStatus: "CLOSED",
+            },
+          },
+          {
+            OR: [
+              { scheduledDate: { gte: day.start, lt: day.end } },
+              {
+                scheduledDate: null,
+                requestedAt: { gte: day.start, lt: day.end },
+              },
+            ],
           },
         ],
       },

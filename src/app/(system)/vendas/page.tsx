@@ -287,7 +287,7 @@ export default async function SalesPage({
                 options={priorityOptions}
                 labels={priorityLabels}
                 defaultValue={
-                  editingOrder?.assemblyOrder?.priority ?? undefined
+                  editingOrder?.assemblyOrder?.priority ?? "MEDIUM"
                 }
                 columns="grid-cols-3"
               />
