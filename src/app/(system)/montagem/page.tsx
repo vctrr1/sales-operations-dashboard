@@ -21,6 +21,7 @@ import { requireRole } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AssemblyOrderDialog } from "./components/assembly-order-dialog";
+import { ProductionNotificationWatcher } from "./components/production-notification-watcher";
 
 const columns = [
   AssemblyStatus.TO_SCHEDULE,
@@ -177,8 +178,24 @@ function formatProductCategories(
     .join(", ");
 }
 
+function getInitialNotificationCursor(
+  orders: { status: AssemblyStatus; requestedAt: Date }[],
+  fallback: Date,
+) {
+  const latestToSchedule = orders.reduce<Date | null>((latest, order) => {
+    if (order.status !== AssemblyStatus.TO_SCHEDULE) return latest;
+    if (!latest || order.requestedAt.getTime() > latest.getTime()) {
+      return order.requestedAt;
+    }
+    return latest;
+  }, null);
+
+  return (latestToSchedule ?? fallback).toISOString();
+}
+
 export default async function AssemblyPage() {
-  await requireRole([UserRole.OPERATION, UserRole.ADMIN]);
+  const user = await requireRole([UserRole.OPERATION, UserRole.ADMIN]);
+  const cursorFallback = new Date();
 
   const assemblyOrders = await prisma.assemblyOrder.findMany({
     include: {
@@ -193,9 +210,18 @@ export default async function AssemblyPage() {
       { requestedAt: "asc" },
     ],
   });
+  const initialNotificationCursor = getInitialNotificationCursor(
+    assemblyOrders,
+    cursorFallback,
+  );
 
   return (
     <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col overflow-hidden">
+      {user.role === UserRole.OPERATION ? (
+        <ProductionNotificationWatcher
+          initialCursor={initialNotificationCursor}
+        />
+      ) : null}
       <section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-5">
         {columns.map((status) => {
           const cards = assemblyOrders
