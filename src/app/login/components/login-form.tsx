@@ -25,6 +25,14 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
+function getLoginErrorMessage(message?: string) {
+  if (message === "Invalid email or password") {
+    return "Email ou senha inválidos.";
+  }
+
+  return "Não foi possível fazer login.";
+}
+
 export function LoginForm({
   className,
   ...props
@@ -59,7 +67,7 @@ export function LoginForm({
             router.replace("/");
           },
           onError: (ctx) => {
-            toast.error(ctx.error.message ?? "Não foi possível fazer login.");
+            toast.error(getLoginErrorMessage(ctx.error.message));
           },
         },
       );

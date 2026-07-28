@@ -1,5 +1,6 @@
 import { Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
+import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -55,7 +56,7 @@ export default async function UsersPage() {
                   <td className="py-3 pr-3 font-medium">{user.name}</td>
                   <td className="py-3 pr-3">{user.email}</td>
                   <td className="py-3 pr-3">
-                    <form id={`role-${user.id}`} action={updateUserRole}>
+                    <ActionForm id={`role-${user.id}`} action={updateUserRole}>
                       <input type="hidden" name="userId" value={user.id} />
                       <Select name="role" defaultValue={user.role}>
                         <SelectTrigger className="w-full">
@@ -69,7 +70,7 @@ export default async function UsersPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </form>
+                    </ActionForm>
                   </td>
                   <td className="py-3 pr-3">
                     {new Intl.DateTimeFormat("pt-BR").format(user.createdAt)}

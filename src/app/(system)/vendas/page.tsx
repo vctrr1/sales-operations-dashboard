@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { Ban, Edit, Funnel, Plus, Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
+import {
+  ActionFieldError,
+  ActionForm,
+  ActionFormError,
+} from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -117,12 +122,15 @@ export default async function SalesPage({
           </div>
         </div>
 
-        <form
+        <ActionForm
           id="sale-order-form"
           key={formKey}
           action={saveSaleOrder}
+          errorToast={false}
+          resetOnSuccess={!editingOrder}
           className={`grid gap-4 lg:grid-cols-12 ${formTextClass}`}
         >
+          <ActionFormError className="lg:col-span-12" />
           <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
           <SaleGeneralInfoCard
             sellers={sellers}
@@ -152,6 +160,7 @@ export default async function SalesPage({
                 labels={productCategoryLabels}
                 defaultValues={editingOrder?.productCategories ?? []}
               />
+              <ActionFieldError name="productCategories" />
               <RadioGroup
                 name="logisticsType"
                 label="Logística:"
@@ -175,6 +184,7 @@ export default async function SalesPage({
                     required
                     defaultValue={editingOrder?.customerName ?? ""}
                   />
+                  <ActionFieldError name="customerName" />
                 </FormField>
                 <FormField label="Nome da Nota:" className="md:col-span-2">
                   <Input
@@ -229,6 +239,7 @@ export default async function SalesPage({
                     );
                   })}
                 </div>
+                <ActionFieldError name="items" />
               </FieldGroup>
             </CardContent>
           </Card>
@@ -299,7 +310,7 @@ export default async function SalesPage({
               </FormField>
             </CardContent>
           </Card>
-        </form>
+        </ActionForm>
       </section>
 
       <Card>

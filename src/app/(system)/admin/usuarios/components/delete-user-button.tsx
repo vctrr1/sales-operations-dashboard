@@ -1,6 +1,7 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,13 +61,13 @@ export function DeleteUserButton({
               Cancelar
             </Button>
           </DialogClose>
-          <form action={deleteUser}>
+          <ActionForm action={deleteUser}>
             <input type="hidden" name="userId" value={userId} />
             <Button type="submit" variant="destructive" className="text-base">
               <Trash2 />
               Apagar
             </Button>
-          </form>
+          </ActionForm>
         </DialogFooter>
       </DialogContent>
     </Dialog>

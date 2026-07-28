@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import {
   AssemblyStatus,
   BudgetOrigin,
@@ -14,16 +13,30 @@ import {
   ProductCategory,
   UserRole,
 } from "@/generated/prisma/enums";
+import { ActionError, safeAction } from "@/lib/action-result";
 import { discountedPaymentMethods, GENERAL_GOAL_SELLER } from "@/lib/domain";
 import {
   parseDateField,
   parseMoneyField,
   parseMonth,
   parseOptionalText,
-  parseRequiredText,
 } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/permissions";
+import { getCurrentUser } from "@/lib/permissions";
+
+async function requireActionRole(roles: UserRole[]) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    throw new ActionError("Sessão expirada. Faça login novamente.");
+  }
+
+  if (!roles.includes(user.role)) {
+    throw new ActionError("Você não tem permissão para realizar esta ação.");
+  }
+
+  return user;
+}
 
 function enumValue<T extends Record<string, string>>(
   source: T,
@@ -32,6 +45,24 @@ function enumValue<T extends Record<string, string>>(
 ) {
   if (typeof value !== "string") return fallback;
   return Object.values(source).includes(value) ? (value as T[keyof T]) : fallback;
+}
+
+function parseActionRequiredText(
+  value: FormDataEntryValue | null,
+  fieldLabel: string,
+  fieldName?: string,
+) {
+  const parsed = parseOptionalText(value);
+
+  if (!parsed) {
+    const message = `Campo obrigatório: ${fieldLabel}`;
+    throw new ActionError(
+      message,
+      fieldName ? { [fieldName]: message } : undefined,
+    );
+  }
+
+  return parsed;
 }
 
 function parseItems(formData: FormData) {
@@ -49,7 +80,9 @@ function parseItems(formData: FormData) {
     .filter((item) => item.description && item.quantity > 0);
 
   if (items.length === 0) {
-    throw new Error("Informe ao menos um item com quantidade e descrição.");
+    throw new ActionError("Informe ao menos um item com quantidade e descrição.", {
+      items: "Informe ao menos um item com quantidade e descrição.",
+    });
   }
 
   return items;
@@ -67,245 +100,288 @@ function parseProductCategories(formData: FormData) {
   const uniqueCategories = Array.from(new Set(categories));
 
   if (uniqueCategories.length === 0) {
-    throw new Error("Informe ao menos uma categoria do produto.");
+    throw new ActionError("Informe ao menos uma categoria do produto.", {
+      productCategories: "Informe ao menos uma categoria do produto.",
+    });
   }
 
   return uniqueCategories;
 }
 
 export async function saveSaleOrder(formData: FormData) {
-  const user = await requireRole([UserRole.SALES, UserRole.ADMIN]);
-  const id = parseOptionalText(formData.get("id"));
-  const commercialStatus = enumValue(
-    CommercialStatus,
-    formData.get("commercialStatus"),
-    CommercialStatus.QUOTE,
-  );
-  const quoteDate = parseDateField(formData.get("quoteDate")) ?? new Date();
-  const closedAt = parseDateField(formData.get("closedAt"));
-  const items = parseItems(formData);
-  const productCategories = parseProductCategories(formData);
-  const paymentMethod =
-    commercialStatus === CommercialStatus.CLOSED
-      ? enumValue(PaymentMethod, formData.get("paymentMethod"), PaymentMethod.CARD)
-      : null;
-
-  const data = {
-    sellerName: parseRequiredText(formData.get("sellerName"), "vendedor"),
-    commercialStatus,
-    quoteDate,
-    closedAt: commercialStatus === CommercialStatus.CLOSED ? closedAt ?? quoteDate : null,
-    quotedAmount: parseMoneyField(formData.get("quotedAmount")),
-    closedAmount:
+  return safeAction(async () => {
+    const user = await requireActionRole([UserRole.SALES, UserRole.ADMIN]);
+    const id = parseOptionalText(formData.get("id"));
+    const commercialStatus = enumValue(
+      CommercialStatus,
+      formData.get("commercialStatus"),
+      CommercialStatus.QUOTE,
+    );
+    const quoteDate = parseDateField(formData.get("quoteDate")) ?? new Date();
+    const closedAt = parseDateField(formData.get("closedAt"));
+    const items = parseItems(formData);
+    const productCategories = parseProductCategories(formData);
+    const paymentMethod =
       commercialStatus === CommercialStatus.CLOSED
-        ? parseMoneyField(formData.get("closedAmount"), parseMoneyField(formData.get("quotedAmount")))
-        : null,
-    discountPercent:
-      paymentMethod &&
-      discountedPaymentMethods.has(paymentMethod) &&
-      parseOptionalText(formData.get("discountPercent"))
-        ? parseMoneyField(formData.get("discountPercent"))
-        : null,
-    paymentMethod,
-    productCategories,
-    logisticsType: enumValue(LogisticsType, formData.get("logisticsType"), LogisticsType.DELIVERY),
-    deliveryAddress: parseOptionalText(formData.get("deliveryAddress")),
-    customerName: parseRequiredText(formData.get("customerName"), "cliente"),
-    invoiceName: parseOptionalText(formData.get("invoiceName")),
-    responsibleContact: parseOptionalText(formData.get("responsibleContact")),
-    customerOrigin: enumValue(
-      CustomerOrigin,
-      formData.get("customerOrigin"),
-      CustomerOrigin.STORE_VISIT,
-    ),
-    budgetOrigin: enumValue(BudgetOrigin, formData.get("budgetOrigin"), BudgetOrigin.SAME_MONTH),
-    notes: parseOptionalText(formData.get("notes")),
-  };
+        ? enumValue(PaymentMethod, formData.get("paymentMethod"), PaymentMethod.CARD)
+        : null;
 
-  const priority = enumValue(Priority, formData.get("priority"), Priority.MEDIUM);
-  const scheduledDate = parseDateField(formData.get("scheduledDate"));
-  const scheduleNotes = parseOptionalText(formData.get("scheduleNotes"));
+    const data = {
+      sellerName: parseActionRequiredText(
+        formData.get("sellerName"),
+        "vendedor",
+        "sellerName",
+      ),
+      commercialStatus,
+      quoteDate,
+      closedAt: commercialStatus === CommercialStatus.CLOSED ? closedAt ?? quoteDate : null,
+      quotedAmount: parseMoneyField(formData.get("quotedAmount")),
+      closedAmount:
+        commercialStatus === CommercialStatus.CLOSED
+          ? parseMoneyField(formData.get("closedAmount"), parseMoneyField(formData.get("quotedAmount")))
+          : null,
+      discountPercent:
+        paymentMethod &&
+        discountedPaymentMethods.has(paymentMethod) &&
+        parseOptionalText(formData.get("discountPercent"))
+          ? parseMoneyField(formData.get("discountPercent"))
+          : null,
+      paymentMethod,
+      productCategories,
+      logisticsType: enumValue(LogisticsType, formData.get("logisticsType"), LogisticsType.DELIVERY),
+      deliveryAddress: parseOptionalText(formData.get("deliveryAddress")),
+      customerName: parseActionRequiredText(
+        formData.get("customerName"),
+        "cliente",
+        "customerName",
+      ),
+      invoiceName: parseOptionalText(formData.get("invoiceName")),
+      responsibleContact: parseOptionalText(formData.get("responsibleContact")),
+      customerOrigin: enumValue(
+        CustomerOrigin,
+        formData.get("customerOrigin"),
+        CustomerOrigin.STORE_VISIT,
+      ),
+      budgetOrigin: enumValue(BudgetOrigin, formData.get("budgetOrigin"), BudgetOrigin.SAME_MONTH),
+      notes: parseOptionalText(formData.get("notes")),
+    };
 
-  await prisma.$transaction(async (tx) => {
-    const saleOrder = id
-      ? await tx.saleOrder.update({
-          where: { id },
-          data: {
-            ...data,
-            items: {
-              deleteMany: {},
-              createMany: { data: items },
+    const priority = enumValue(Priority, formData.get("priority"), Priority.MEDIUM);
+    const scheduledDate = parseDateField(formData.get("scheduledDate"));
+    const scheduleNotes = parseOptionalText(formData.get("scheduleNotes"));
+
+    await prisma.$transaction(async (tx) => {
+      const saleOrder = id
+        ? await tx.saleOrder.update({
+            where: { id },
+            data: {
+              ...data,
+              items: {
+                deleteMany: {},
+                createMany: { data: items },
+              },
             },
+          })
+        : await tx.saleOrder.create({
+            data: {
+              ...data,
+              createdById: user.id,
+              items: { createMany: { data: items } },
+            },
+          });
+
+      if (commercialStatus === CommercialStatus.CLOSED) {
+        await tx.assemblyOrder.upsert({
+          where: { saleOrderId: saleOrder.id },
+          create: {
+            saleOrderId: saleOrder.id,
+            priority,
+            scheduledDate,
+            scheduleNotes,
           },
-        })
-      : await tx.saleOrder.create({
-          data: {
-            ...data,
-            createdById: user.id,
-            items: { createMany: { data: items } },
+          update: {
+            priority,
+            scheduledDate,
+            scheduleNotes,
           },
         });
+      } else {
+        await tx.assemblyOrder.deleteMany({
+          where: { saleOrderId: saleOrder.id },
+        });
+      }
+    });
 
-    if (commercialStatus === CommercialStatus.CLOSED) {
-      await tx.assemblyOrder.upsert({
-        where: { saleOrderId: saleOrder.id },
-        create: {
-          saleOrderId: saleOrder.id,
-          priority,
-          scheduledDate,
-          scheduleNotes,
-        },
-        update: {
-          priority,
-          scheduledDate,
-          scheduleNotes,
-        },
-      });
-    } else {
-      await tx.assemblyOrder.deleteMany({
-        where: { saleOrderId: saleOrder.id },
-      });
-    }
+    revalidatePath("/vendas");
+    revalidatePath("/vendas/dashboard");
+    revalidatePath("/montagem");
+    revalidatePath("/financeiro");
+
+    return {
+      ok: true,
+      message: id ? "Ordem atualizada." : "Ordem criada.",
+      redirectTo: "/vendas",
+    };
   });
-
-  revalidatePath("/vendas");
-  revalidatePath("/vendas/dashboard");
-  revalidatePath("/montagem");
-  revalidatePath("/financeiro");
-  redirect("/vendas");
 }
 
 export async function updateAssemblyOrder(formData: FormData) {
-  await requireRole([UserRole.OPERATION, UserRole.ADMIN]);
+  return safeAction(async () => {
+    await requireActionRole([UserRole.OPERATION, UserRole.ADMIN]);
 
-  const id = parseRequiredText(formData.get("id"), "ordem de montagem");
+    const id = parseActionRequiredText(formData.get("id"), "ordem de montagem");
 
-  await prisma.assemblyOrder.update({
-    where: { id },
-    data: {
-      status: enumValue(AssemblyStatus, formData.get("status"), AssemblyStatus.TO_SCHEDULE),
-      priority: enumValue(Priority, formData.get("priority"), Priority.MEDIUM),
-      scheduledDate: parseDateField(formData.get("scheduledDate")),
-      scheduleNotes: parseOptionalText(formData.get("scheduleNotes")),
-    },
+    await prisma.assemblyOrder.update({
+      where: { id },
+      data: {
+        status: enumValue(AssemblyStatus, formData.get("status"), AssemblyStatus.TO_SCHEDULE),
+        priority: enumValue(Priority, formData.get("priority"), Priority.MEDIUM),
+        scheduledDate: parseDateField(formData.get("scheduledDate")),
+        scheduleNotes: parseOptionalText(formData.get("scheduleNotes")),
+      },
+    });
+
+    revalidatePath("/montagem");
+    revalidatePath("/financeiro");
+
+    return { ok: true, message: "Ordem de montagem atualizada." };
   });
-
-  revalidatePath("/montagem");
-  revalidatePath("/financeiro");
 }
 
 export async function saveMonthlyGoal(formData: FormData) {
-  await requireRole([UserRole.ADMIN]);
+  return safeAction(async () => {
+    await requireActionRole([UserRole.ADMIN]);
 
-  const { start } = parseMonth(parseOptionalText(formData.get("month")));
-  const sellerName =
-    parseOptionalText(formData.get("sellerName"))?.toUpperCase() ?? GENERAL_GOAL_SELLER;
+    const { start } = parseMonth(parseOptionalText(formData.get("month")));
+    const sellerName =
+      parseOptionalText(formData.get("sellerName"))?.toUpperCase() ?? GENERAL_GOAL_SELLER;
 
-  await prisma.monthlyGoal.upsert({
-    where: {
-      month_sellerName: {
+    await prisma.monthlyGoal.upsert({
+      where: {
+        month_sellerName: {
+          month: start,
+          sellerName,
+        },
+      },
+      create: {
         month: start,
         sellerName,
+        baseAmount: parseMoneyField(formData.get("baseAmount")),
+        midAmount: parseMoneyField(formData.get("midAmount")),
+        superAmount: parseMoneyField(formData.get("superAmount")),
       },
-    },
-    create: {
-      month: start,
-      sellerName,
-      baseAmount: parseMoneyField(formData.get("baseAmount")),
-      midAmount: parseMoneyField(formData.get("midAmount")),
-      superAmount: parseMoneyField(formData.get("superAmount")),
-    },
-    update: {
-      baseAmount: parseMoneyField(formData.get("baseAmount")),
-      midAmount: parseMoneyField(formData.get("midAmount")),
-      superAmount: parseMoneyField(formData.get("superAmount")),
-    },
-  });
+      update: {
+        baseAmount: parseMoneyField(formData.get("baseAmount")),
+        midAmount: parseMoneyField(formData.get("midAmount")),
+        superAmount: parseMoneyField(formData.get("superAmount")),
+      },
+    });
 
-  revalidatePath("/financeiro");
-  revalidatePath("/vendas/dashboard");
+    revalidatePath("/financeiro");
+    revalidatePath("/vendas/dashboard");
+
+    return { ok: true, message: "Meta mensal salva." };
+  });
 }
 
 export async function updateUserRole(formData: FormData) {
-  await requireRole([UserRole.ADMIN]);
+  return safeAction(async () => {
+    await requireActionRole([UserRole.ADMIN]);
 
-  const userId = parseRequiredText(formData.get("userId"), "usuário");
-  const role = enumValue(UserRole, formData.get("role"), UserRole.PENDING);
+    const userId = parseActionRequiredText(formData.get("userId"), "usuário");
+    const role = enumValue(UserRole, formData.get("role"), UserRole.PENDING);
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { role },
+    await prisma.user.update({
+      where: { id: userId },
+      data: { role },
+    });
+
+    revalidatePath("/admin/usuarios");
+
+    return { ok: true, message: "Perfil atualizado." };
   });
-
-  revalidatePath("/admin/usuarios");
 }
 
 export async function deleteUser(formData: FormData) {
-  const currentUser = await requireRole([UserRole.ADMIN]);
+  return safeAction(async () => {
+    const currentUser = await requireActionRole([UserRole.ADMIN]);
 
-  const userId = parseRequiredText(formData.get("userId"), "usuário");
+    const userId = parseActionRequiredText(formData.get("userId"), "usuário");
 
-  if (userId === currentUser.id) {
-    throw new Error("Você não pode apagar seu próprio usuário.");
-  }
+    if (userId === currentUser.id) {
+      throw new ActionError("Você não pode apagar seu próprio usuário.");
+    }
 
-  await prisma.user.delete({
-    where: { id: userId },
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    revalidatePath("/admin/usuarios");
+
+    return { ok: true, message: "Usuário apagado." };
   });
-
-  revalidatePath("/admin/usuarios");
 }
 
 export async function saveCalendarEvent(formData: FormData) {
-  const user = await requireRole([
-    UserRole.SALES,
-    UserRole.OPERATION,
-    UserRole.ADMIN,
-  ]);
+  return safeAction(async () => {
+    const user = await requireActionRole([
+      UserRole.SALES,
+      UserRole.OPERATION,
+      UserRole.ADMIN,
+    ]);
 
-  const id = parseOptionalText(formData.get("id"));
-  const eventDate = parseDateField(formData.get("eventDate"));
+    const id = parseOptionalText(formData.get("id"));
+    const eventDate = parseDateField(formData.get("eventDate"));
 
-  if (!eventDate) {
-    throw new Error("Informe a data da programação.");
-  }
+    if (!eventDate) {
+      throw new ActionError("Informe a data da programação.", {
+        eventDate: "Informe a data da programação.",
+      });
+    }
 
-  const data = {
-    title: parseRequiredText(formData.get("title"), "título"),
-    notes: parseOptionalText(formData.get("notes")),
-    eventDate,
-    type: enumValue(
-      CalendarEventType,
-      formData.get("type"),
-      CalendarEventType.SCHEDULE,
-    ),
-  };
+    const data = {
+      title: parseActionRequiredText(formData.get("title"), "título", "title"),
+      notes: parseOptionalText(formData.get("notes")),
+      eventDate,
+      type: enumValue(
+        CalendarEventType,
+        formData.get("type"),
+        CalendarEventType.SCHEDULE,
+      ),
+    };
 
-  if (id) {
-    await prisma.calendarEvent.update({
-      where: { id },
-      data,
-    });
-  } else {
-    await prisma.calendarEvent.create({
-      data: {
-        ...data,
-        createdById: user.id,
-      },
-    });
-  }
+    if (id) {
+      await prisma.calendarEvent.update({
+        where: { id },
+        data,
+      });
+    } else {
+      await prisma.calendarEvent.create({
+        data: {
+          ...data,
+          createdById: user.id,
+        },
+      });
+    }
 
-  revalidatePath("/calendario");
+    revalidatePath("/calendario");
+
+    return { ok: true, message: id ? "Programação atualizada." : "Programação criada." };
+  });
 }
 
 export async function deleteCalendarEvent(formData: FormData) {
-  await requireRole([UserRole.SALES, UserRole.OPERATION, UserRole.ADMIN]);
+  return safeAction(async () => {
+    await requireActionRole([UserRole.SALES, UserRole.OPERATION, UserRole.ADMIN]);
 
-  const id = parseRequiredText(formData.get("id"), "programação");
+    const id = parseActionRequiredText(formData.get("id"), "programação");
 
-  await prisma.calendarEvent.delete({
-    where: { id },
+    await prisma.calendarEvent.delete({
+      where: { id },
+    });
+
+    revalidatePath("/calendario");
+
+    return { ok: true, message: "Programação apagada." };
   });
-
-  revalidatePath("/calendario");
 }

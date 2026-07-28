@@ -70,8 +70,8 @@ export function ProductionNotificationWatcher({
         const firstOrder = data.orders[0];
         toast.info(
           data.orders.length === 1
-            ? "Novo pedido para programar"
-            : `${data.orders.length} novos pedidos para programar`,
+            ? "Novo pedido chegou."
+            : `${data.orders.length} Novos pedidos chegaram.`,
           {
             description:
               data.orders.length === 1 && firstOrder

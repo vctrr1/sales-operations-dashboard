@@ -1,5 +1,6 @@
 import { Funnel, Save } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
+import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -186,7 +187,7 @@ export default async function FinancePage({
           {sellers.map((seller) => {
             const goal = goalBySeller.get(seller.goalKey);
             return (
-              <form
+              <ActionForm
                 key={seller.id}
                 action={saveMonthlyGoal}
                 className="grid gap-2 rounded-lg border p-3 md:grid-cols-[1fr_160px_160px_160px_auto]"
@@ -235,7 +236,7 @@ export default async function FinancePage({
                     Salvar
                   </Button>
                 </div>
-              </form>
+              </ActionForm>
             );
           })}
         </CardContent>

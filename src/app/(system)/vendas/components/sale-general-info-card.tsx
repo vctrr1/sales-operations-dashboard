@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CommercialStatus } from "@/generated/prisma/enums";
+import { ActionFieldError } from "@/components/action-form";
 import {
   Card,
   CardContent,
@@ -91,6 +92,7 @@ export function SaleGeneralInfoCard({
               ))}
             </SelectContent>
           </Select>
+          <ActionFieldError name="sellerName" />
         </FormField>
 
         <FormField label="Data do Orçamento:">

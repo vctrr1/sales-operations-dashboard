@@ -180,7 +180,6 @@ function formatProductCategories(
 
 function getInitialNotificationCursor(
   orders: { status: AssemblyStatus; requestedAt: Date }[],
-  fallback: Date,
 ) {
   const latestToSchedule = orders.reduce<Date | null>((latest, order) => {
     if (order.status !== AssemblyStatus.TO_SCHEDULE) return latest;
@@ -190,12 +189,11 @@ function getInitialNotificationCursor(
     return latest;
   }, null);
 
-  return (latestToSchedule ?? fallback).toISOString();
+  return (latestToSchedule ?? new Date(0)).toISOString();
 }
 
 export default async function AssemblyPage() {
   const user = await requireRole([UserRole.OPERATION, UserRole.ADMIN]);
-  const cursorFallback = new Date();
 
   const assemblyOrders = await prisma.assemblyOrder.findMany({
     include: {
@@ -210,10 +208,7 @@ export default async function AssemblyPage() {
       { requestedAt: "asc" },
     ],
   });
-  const initialNotificationCursor = getInitialNotificationCursor(
-    assemblyOrders,
-    cursorFallback,
-  );
+  const initialNotificationCursor = getInitialNotificationCursor(assemblyOrders);
 
   return (
     <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col overflow-hidden">

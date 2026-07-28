@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
+  ActionFieldError,
+  ActionForm,
+  ActionFormError,
+} from "@/components/action-form";
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -57,7 +62,8 @@ function AddItemCalendarDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form action={saveCalendarEvent} className="grid gap-4">
+        <ActionForm action={saveCalendarEvent} className="grid gap-4">
+          <ActionFormError />
           <input type="hidden" name="id" value={event?.id ?? ""} />
           <div className="grid gap-2">
             <label className="text-base text-muted-foreground" htmlFor="title">
@@ -70,6 +76,7 @@ function AddItemCalendarDialog({
               defaultValue={event?.title ?? ""}
               className="text-base md:text-base"
             />
+            <ActionFieldError name="title" />
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="grid gap-2">
@@ -87,6 +94,7 @@ function AddItemCalendarDialog({
                 defaultValue={dateInputValue(event?.eventDate)}
                 className="text-base md:text-base"
               />
+              <ActionFieldError name="eventDate" />
             </div>
             <div className="grid gap-2">
               <label className="text-base text-muted-foreground">
@@ -135,7 +143,7 @@ function AddItemCalendarDialog({
               {isEditing ? "Salvar alterações" : "Adicionar"}
             </Button>
           </DialogFooter>
-        </form>
+        </ActionForm>
       </DialogContent>
     </Dialog>
   );

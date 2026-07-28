@@ -1,4 +1,5 @@
 import { CalendarClock, SquarePen, Trash2 } from "lucide-react";
+import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -77,13 +78,13 @@ export function CalendarEventCard({ event }: { event: CalendarEvent }) {
         ) : null}
 
         <DialogFooter>
-          <form action={deleteCalendarEvent}>
+          <ActionForm action={deleteCalendarEvent}>
             <input type="hidden" name="id" value={event.id} />
             <Button type="submit" variant="destructive" className="text-base">
               <Trash2 />
               Apagar
             </Button>
-          </form>
+          </ActionForm>
           <AddItemCalendarDialog
             event={event}
             trigger={

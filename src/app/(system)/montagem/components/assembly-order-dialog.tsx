@@ -1,4 +1,5 @@
 import { Save } from "lucide-react";
+import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -130,7 +131,7 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
             </section>
           ) : null}
 
-          <form
+          <ActionForm
             action={updateAssemblyOrder}
             className="grid gap-3 rounded-lg border p-3"
           >
@@ -185,7 +186,7 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
               <Save />
               Salvar alterações
             </Button>
-          </form>
+          </ActionForm>
         </div>
       </ScrollArea>
     </DialogContent>

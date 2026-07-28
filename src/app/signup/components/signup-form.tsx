@@ -36,6 +36,18 @@ export const signupSchema = z
   });
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
+function getSignupErrorMessage(message?: string) {
+  if (message === "User already exists" || message === "Email already exists") {
+    return "Já existe uma conta com esse email.";
+  }
+
+  if (message === "Invalid email") {
+    return "Informe um email válido.";
+  }
+
+  return "Não foi possível criar a conta.";
+}
+
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,7 +79,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             router.replace("/");
           },
           onError: (ctx) => {
-            toast.error(ctx.error.message ?? "Não foi possível criar a conta.");
+            toast.error(getSignupErrorMessage(ctx.error.message));
           },
         },
       );
