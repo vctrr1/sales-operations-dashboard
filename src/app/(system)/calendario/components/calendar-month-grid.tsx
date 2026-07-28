@@ -106,8 +106,8 @@ export function CalendarMonthGrid({
               key={day.key}
               className={cn(
                 "flex min-h-42 flex-col border-b p-2 md:h-60 md:border-r",
-                !day.inCurrentMonth && "bg-muted/30 text-muted-foreground",
-                day.isToday && "bg-primary/5",
+                !day.inCurrentMonth && "bg-muted/60 text-muted-foreground",
+                day.isToday && "bg-primary/10",
               )}
             >
               <div className="mb-2 flex items-center justify-between gap-2">
