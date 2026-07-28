@@ -138,7 +138,7 @@ export default async function FinancePage({
           <CardDescription>{dailyOrders.length} Registros</CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-base">
+          <table className="w-full min-w-230 text-left text-base">
             <thead className="border-b text-sm uppercase text-muted-foreground">
               <tr>
                 <th className="py-2 pr-3">Ordem</th>
