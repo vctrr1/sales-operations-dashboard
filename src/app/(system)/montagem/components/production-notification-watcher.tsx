@@ -68,7 +68,7 @@ export function ProductionNotificationWatcher({
         }
 
         const firstOrder = data.orders[0];
-        toast.info(
+        toast.success(
           data.orders.length === 1
             ? "Novo pedido chegou."
             : `${data.orders.length} Novos pedidos chegaram.`,
