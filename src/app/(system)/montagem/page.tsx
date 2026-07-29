@@ -213,7 +213,8 @@ export default async function AssemblyPage() {
       { requestedAt: "asc" },
     ],
   });
-  const initialNotificationCursor = getInitialNotificationCursor(assemblyOrders);
+  const initialNotificationCursor =
+    getInitialNotificationCursor(assemblyOrders);
 
   return (
     <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col overflow-hidden">
@@ -308,14 +309,6 @@ export default async function AssemblyPage() {
                                       : dateTone.label}
                                   </span>
                                 </div>
-                                {assembly.saleOrder.deliveryAddress ? (
-                                  <div className="flex items-start gap-1 text-base text-muted-foreground">
-                                    <MapPin className="mt-0.5 size-3.5 shrink-0" />
-                                    <span className="line-clamp-2">
-                                      {assembly.saleOrder.deliveryAddress}
-                                    </span>
-                                  </div>
-                                ) : null}
                                 <p className="text-base text-muted-foreground">
                                   {formatProductCategories(
                                     assembly.saleOrder.productCategories,

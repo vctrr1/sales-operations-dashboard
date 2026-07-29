@@ -207,7 +207,7 @@ export function SalesAdminDashboard({
           title="Categorias nas Vendas"
           data={categoryData}
           valueType="quantity"
-          centerLabel="Categorias"
+          centerLabel="Incidências"
         />
       </section>
 

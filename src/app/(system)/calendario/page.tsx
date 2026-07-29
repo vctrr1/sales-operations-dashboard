@@ -1,10 +1,5 @@
 import Link from "next/link";
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Funnel,
-} from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Funnel } from "lucide-react";
 import { UserRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,66 +45,64 @@ export default async function CalendarPage({
   const month = parseMonth(params.month);
   const { gridStart, gridEnd } = calendarGridRange(month.start);
 
-  const [scheduledOrders, unscheduledOrders, calendarEvents] = await Promise.all([
-    prisma.assemblyOrder.findMany({
-      where: {
-        scheduledDate: {
-          gte: gridStart,
-          lt: gridEnd,
+  const [scheduledOrders, unscheduledOrders, calendarEvents] =
+    await Promise.all([
+      prisma.assemblyOrder.findMany({
+        where: {
+          scheduledDate: {
+            gte: gridStart,
+            lt: gridEnd,
+          },
+          saleOrder: {
+            commercialStatus: "CLOSED",
+          },
         },
-        saleOrder: {
-          commercialStatus: "CLOSED",
+        include: {
+          saleOrder: {
+            include: { items: true },
+          },
         },
-      },
-      include: {
-        saleOrder: {
-          include: { items: true },
+        orderBy: [
+          { scheduledDate: "asc" },
+          { priority: "asc" },
+          { requestedAt: "asc" },
+        ],
+      }),
+      prisma.assemblyOrder.findMany({
+        where: {
+          scheduledDate: null,
+          saleOrder: {
+            commercialStatus: "CLOSED",
+          },
         },
-      },
-      orderBy: [
-        { scheduledDate: "asc" },
-        { priority: "asc" },
-        { requestedAt: "asc" },
-      ],
-    }),
-    prisma.assemblyOrder.findMany({
-      where: {
-        scheduledDate: null,
-        saleOrder: {
-          commercialStatus: "CLOSED",
+        include: {
+          saleOrder: {
+            include: { items: true },
+          },
         },
-      },
-      include: {
-        saleOrder: {
-          include: { items: true },
+        orderBy: [{ priority: "asc" }, { requestedAt: "asc" }],
+      }),
+      prisma.calendarEvent.findMany({
+        where: {
+          eventDate: {
+            gte: gridStart,
+            lt: gridEnd,
+          },
         },
-      },
-      orderBy: [{ priority: "asc" }, { requestedAt: "asc" }],
-    }),
-    prisma.calendarEvent.findMany({
-      where: {
-        eventDate: {
-          gte: gridStart,
-          lt: gridEnd,
+        include: {
+          createdBy: {
+            select: { name: true },
+          },
         },
-      },
-      include: {
-        createdBy: {
-          select: { name: true },
-        },
-      },
-      orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
-    }),
-  ]);
+        orderBy: [{ eventDate: "asc" }, { createdAt: "asc" }],
+      }),
+    ]);
 
   return (
-    <div className="mx-auto grid w-full gap-6 px-3">
-      <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="mx-auto grid w-full gap-4 px-3">
+      <section className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl">
-            <CalendarDays className="size-6" />
-            Calendário
-          </h1>
+          <h1 className="flex items-center gap-2 text-2xl">Calendário</h1>
           <p className="text-base text-muted-foreground">
             Ordens por data programada de montagem
           </p>
@@ -158,10 +151,10 @@ export default async function CalendarPage({
 
       <section className="grid gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-medium">{monthTitle(month.key)}</h2>
+          <h2 className="text-lg font-medium">{monthTitle(month.key)}</h2>
           <p className="text-base text-muted-foreground">
-            {scheduledOrders.length} ordens e {calendarEvents.length} eventos
-            no período visível
+            {scheduledOrders.length} ordens e {calendarEvents.length} eventos no
+            período visível
           </p>
         </div>
         <CalendarMonthGrid
