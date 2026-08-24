@@ -6,6 +6,7 @@ import { BellRing } from "lucide-react";
 import useSound from "use-sound";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Priority } from "@/generated/prisma/enums";
 
 type NotificationOrder = {
   id: string;
@@ -13,6 +14,7 @@ type NotificationOrder = {
   orderNumber: number;
   customerName: string;
   sellerName: string;
+  priority: Priority;
 };
 
 type NotificationResponse = {
@@ -41,6 +43,18 @@ export function ProductionNotificationWatcher({
     interrupt: true,
     soundEnabled,
   });
+  const [playPriorityHigh] = useSound("/sounds/production-priority-high.mp3", {
+    volume: 0.9,
+    soundEnabled,
+  });
+  const [playPriorityMedium] = useSound(
+    "/sounds/production-priority-medium.mp3",
+    { volume: 0.9, soundEnabled },
+  );
+  const [playPriorityLow] = useSound("/sounds/production-priority-low.mp3", {
+    volume: 0.9,
+    soundEnabled,
+  });
 
   useEffect(() => {
     async function checkForNewOrders() {
@@ -65,6 +79,19 @@ export function ProductionNotificationWatcher({
 
         if (soundEnabled) {
           play();
+          window.setTimeout(() => {
+            switch (data.orders[0]?.priority) {
+              case Priority.HIGH:
+                playPriorityHigh();
+                break;
+              case Priority.MEDIUM:
+                playPriorityMedium();
+                break;
+              case Priority.LOW:
+                playPriorityLow();
+                break;
+            }
+          }, 300);
         }
 
         const firstOrder = data.orders[0];
@@ -91,7 +118,14 @@ export function ProductionNotificationWatcher({
     const interval = window.setInterval(checkForNewOrders, 15_000);
 
     return () => window.clearInterval(interval);
-  }, [play, router, soundEnabled]);
+  }, [
+    play,
+    playPriorityHigh,
+    playPriorityLow,
+    playPriorityMedium,
+    router,
+    soundEnabled,
+  ]);
 
   if (soundEnabled) return null;
 
@@ -102,7 +136,8 @@ export function ProductionNotificationWatcher({
         <div>
           <p className="font-medium">Notificações sonoras da produção</p>
           <p className="text-sm text-sky-800/80 dark:text-sky-100/70">
-            Ative para tocar um alerta quando chegar pedido em A programar.
+            Ative para tocar um alerta e anunciar a prioridade quando chegar
+            pedido em A programar.
           </p>
         </div>
       </div>
@@ -112,7 +147,7 @@ export function ProductionNotificationWatcher({
         className="border-sky-300 bg-background text-base text-sky-900 hover:bg-sky-100 dark:border-sky-800 dark:text-sky-100 dark:hover:bg-sky-950"
         onClick={() => {
           setSoundEnabled(true);
-          toast.success("Notificações sonoras ativadas.");
+          toast.success("Notificações sonoras e de voz ativadas.");
         }}
       >
         Ativar notificações

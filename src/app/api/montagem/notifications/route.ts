@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       requestedAt: true,
+      priority: true,
       saleOrder: {
         select: {
           orderNumber: true,
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
     orders: orders.map((order) => ({
       id: order.id,
       requestedAt: order.requestedAt.toISOString(),
+      priority: order.priority,
       orderNumber: order.saleOrder.orderNumber,
       customerName: order.saleOrder.customerName,
       sellerName: order.saleOrder.sellerName,
