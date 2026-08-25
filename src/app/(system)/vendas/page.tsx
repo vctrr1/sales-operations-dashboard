@@ -267,7 +267,7 @@ export default async function SalesPage({
                 defaultValue={editingOrder?.budgetOrigin}
                 columns="grid-cols-1"
               />
-              <FormField label="Observações:">
+              <FormField label="Observações comerciais:">
                 <Textarea
                   name="notes"
                   defaultValue={editingOrder?.notes ?? ""}
@@ -286,9 +286,7 @@ export default async function SalesPage({
                 label="Prioridade da Montagem"
                 options={priorityOptions}
                 labels={priorityLabels}
-                defaultValue={
-                  editingOrder?.assemblyOrder?.priority ?? "MEDIUM"
-                }
+                defaultValue={editingOrder?.assemblyOrder?.priority ?? "MEDIUM"}
                 columns="grid-cols-3"
               />
               <FormField label="Data Programada">

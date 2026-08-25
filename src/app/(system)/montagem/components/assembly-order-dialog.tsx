@@ -7,6 +7,7 @@ import {
   Package,
   PencilLine,
   Save,
+  ListSortDescending,
 } from "lucide-react";
 import { ActionForm } from "@/components/action-form";
 import { Badge } from "@/components/ui/badge";
@@ -153,7 +154,10 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
           </section>
 
           <section className="grid gap-1">
-            <h3 className="text-base font-medium">Categoria</h3>
+            <h3 className="flex items-center gap-2 text-base font-medium">
+              <ListSortDescending className="size-4 text-muted-foreground" />
+              Categoria
+            </h3>
             <p className="rounded-lg border bg-muted/30 p-3 text-base">
               {formatProductCategories(assembly.saleOrder.productCategories)}
             </p>
@@ -163,7 +167,7 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
             <section className="grid gap-1">
               <h3 className="flex items-center gap-2 text-base font-medium">
                 <MessageSquareText className="size-4 text-muted-foreground" />
-                Observação comercial
+                Observações comerciais
               </h3>
               <p className="rounded-lg border bg-muted/30 p-3 text-base">
                 {assembly.saleOrder.notes}
@@ -176,24 +180,32 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
             className="grid gap-3 rounded-lg border p-3"
           >
             <input type="hidden" name="id" value={assembly.id} />
-            <h3 className="flex items-center gap-2 text-base font-medium">
-              <PencilLine className="size-4 text-muted-foreground" />
-              Programação
-            </h3>
-            <Input
-              type="date"
-              name="scheduledDate"
-              defaultValue={dateInputValue(assembly.scheduledDate)}
-              className="text-base md:text-base"
-              aria-label="Data marcada"
-            />
-            <textarea
-              name="scheduleNotes"
-              defaultValue={assembly.scheduleNotes ?? ""}
-              className={textareaClass}
-              aria-label="Prazo ou observação"
-              placeholder="Prazo ou observação da montagem"
-            />
+            <div className="flex flex-col gap-1">
+              <h3 className="flex items-center gap-2 text-base font-medium">
+                <PencilLine className="size-4 text-muted-foreground" />
+                Programação
+              </h3>
+              <Input
+                type="date"
+                name="scheduledDate"
+                defaultValue={dateInputValue(assembly.scheduledDate)}
+                className="text-base md:text-base"
+                aria-label="Data marcada"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <h3 className="flex items-center gap-2 text-base font-medium">
+                <MessageSquareText className="size-4 text-muted-foreground" />
+                Observações de montagem
+              </h3>
+              <textarea
+                name="scheduleNotes"
+                defaultValue={assembly.scheduleNotes ?? ""}
+                className={textareaClass}
+                aria-label="Prazo ou observação"
+                placeholder="Prazo ou observação da montagem"
+              />
+            </div>
             <Button type="submit" className="text-base" variant="outline">
               <Save />
               Salvar programação
