@@ -206,7 +206,11 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
                 placeholder="Prazo ou observação da montagem"
               />
             </div>
-            <Button type="submit" className="text-base" variant="outline">
+            <Button
+              type="submit"
+              className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+              variant="outline"
+            >
               <Save />
               Salvar programação
             </Button>
