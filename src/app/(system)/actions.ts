@@ -252,6 +252,54 @@ export async function updateAssemblyOrder(formData: FormData) {
   });
 }
 
+export async function updateAssemblyOrderStatus(
+  id: string,
+  status: AssemblyStatus,
+) {
+  return safeAction(async () => {
+    await requireActionRole([UserRole.OPERATION, UserRole.ADMIN]);
+
+    if (!id.trim()) {
+      throw new ActionError("Ordem de montagem inválida.");
+    }
+
+    if (!Object.values(AssemblyStatus).includes(status)) {
+      throw new ActionError("Status de montagem inválido.");
+    }
+
+    await prisma.assemblyOrder.update({
+      where: { id },
+      data: { status },
+    });
+
+    revalidatePath("/montagem");
+    revalidatePath("/financeiro");
+
+    return { ok: true, message: "Status da ordem atualizado." };
+  });
+}
+
+export async function updateAssemblySchedule(formData: FormData) {
+  return safeAction(async () => {
+    await requireActionRole([UserRole.OPERATION, UserRole.ADMIN]);
+
+    const id = parseActionRequiredText(formData.get("id"), "ordem de montagem");
+
+    await prisma.assemblyOrder.update({
+      where: { id },
+      data: {
+        scheduledDate: parseDateField(formData.get("scheduledDate")),
+        scheduleNotes: parseOptionalText(formData.get("scheduleNotes")),
+      },
+    });
+
+    revalidatePath("/montagem");
+    revalidatePath("/financeiro");
+
+    return { ok: true, message: "Programação da ordem atualizada." };
+  });
+}
+
 export async function saveMonthlyGoal(formData: FormData) {
   return safeAction(async () => {
     await requireActionRole([UserRole.ADMIN]);
