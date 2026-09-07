@@ -267,7 +267,7 @@ export default async function SalesPage({
                 defaultValue={editingOrder?.budgetOrigin}
                 columns="grid-cols-1"
               />
-              <FormField label="Observações comerciais:">
+              <FormField label="Observações Comerciais:">
                 <Textarea
                   name="notes"
                   defaultValue={editingOrder?.notes ?? ""}
@@ -283,13 +283,13 @@ export default async function SalesPage({
             <CardContent className="grid gap-4 md:grid-cols-[minmax(220px,320px)_180px_1fr]">
               <RadioGroup
                 name="priority"
-                label="Prioridade da Montagem"
+                label="Prioridade da Montagem:"
                 options={priorityOptions}
                 labels={priorityLabels}
                 defaultValue={editingOrder?.assemblyOrder?.priority ?? "MEDIUM"}
                 columns="grid-cols-3"
               />
-              <FormField label="Data Programada">
+              <FormField label="Data Programada:">
                 <Input
                   type="date"
                   name="scheduledDate"
@@ -298,7 +298,7 @@ export default async function SalesPage({
                   )}
                 />
               </FormField>
-              <FormField label="Prazo/Observação da montagem">
+              <FormField label="Prazo/Observação da Montagem:">
                 <Input
                   name="scheduleNotes"
                   defaultValue={
