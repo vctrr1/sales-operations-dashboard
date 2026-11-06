@@ -174,12 +174,14 @@ export default async function CalendarPage({
           <div className="flex items-center gap-1">
             <Button
               asChild
+              className="text-base"
               variant={viewMode === "month" ? "default" : "outline"}
             >
               <Link href={`/calendario?month=${month.key}`}>Mês</Link>
             </Button>
             <Button
               asChild
+              className="text-base"
               variant={viewMode === "week" ? "default" : "outline"}
             >
               <Link
@@ -230,7 +232,6 @@ export default async function CalendarPage({
                 <input type="hidden" name="view" value="week" />
                 <Button
                   type="submit"
-                  variant="outline"
                   className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
                 >
                   <Funnel />
