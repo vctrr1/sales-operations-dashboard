@@ -12,6 +12,7 @@ export type CalendarOrder = {
   status: AssemblyStatus;
   priority: Priority;
   scheduledDate: Date | null;
+  scheduleNotes: string | null;
   requestedAt: Date;
   saleOrder: {
     orderNumber: number;
@@ -19,8 +20,10 @@ export type CalendarOrder = {
     sellerName: string;
     logisticsType: LogisticsType;
     productCategories: ProductCategory[];
+    nfsNumber: string | null;
     closedAmount: Decimal | number | string | null;
     deliveryAddress: string | null;
+    notes: string | null;
     items: {
       id: string;
       quantity: number;

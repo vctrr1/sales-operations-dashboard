@@ -4,8 +4,10 @@ import {
   logisticsTypeLabels,
   priorityLabels,
 } from "@/lib/domain";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { money } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { AssemblyOrderDialog } from "../../montagem/components/assembly-order-dialog";
 import type { CalendarOrder } from "./calendar-types";
 
 const priorityStyles = {
@@ -36,69 +38,99 @@ const statusBadgeStyles = {
 
 export function CalendarOrderCard({ order }: { order: CalendarOrder }) {
   return (
-    <article
-      className={cn(
-        "relative grid gap-1 rounded-md border border-l-4 bg-background/80 p-2 text-base shadow-sm",
-        statusAccentStyles[order.status],
-      )}
-    >
-      <span
+    <Dialog>
+      <article
         className={cn(
-          "absolute right-2 top-2 rounded-md border px-1.5 py-0.5 text-xs font-medium",
-          priorityStyles[order.priority],
+          "relative grid gap-1 rounded-md border border-l-4 bg-background/80 p-2 text-base shadow-sm",
+          statusAccentStyles[order.status],
         )}
       >
-        {priorityLabels[order.priority]}
-      </span>
-
-      <div className="min-w-0 pr-13">
-        <p className="truncate font-medium">
-          #{order.saleOrder.orderNumber} {order.saleOrder.customerName}
-        </p>
-        <p className="truncate text-sm text-muted-foreground">
-          {order.saleOrder.sellerName} ·{" "}
-          {logisticsTypeLabels[order.saleOrder.logisticsType]}
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+        <DialogTrigger asChild>
+          <button
+            type="button"
+            className="absolute inset-0 z-10 m-0 cursor-pointer rounded-md border-0 bg-transparent p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            aria-label={`Ver detalhes da ordem ${order.saleOrder.orderNumber}, ${order.saleOrder.customerName}`}
+          />
+        </DialogTrigger>
         <span
           className={cn(
-            "rounded-md px-1.5 py-0.5 text-xs font-medium",
-            statusBadgeStyles[order.status],
+            "pointer-events-none absolute right-2 top-2 rounded-md border px-1.5 py-0.5 text-xs font-medium",
+            priorityStyles[order.priority],
           )}
         >
-          {assemblyStatusLabels[order.status]}
+          {priorityLabels[order.priority]}
         </span>
-        <span>{money(order.saleOrder.closedAmount)}</span>
-      </div>
 
-      {order.saleOrder.deliveryAddress ? (
-        <div className="flex items-start gap-1 text-sm text-muted-foreground">
-          <MapPin className="mt-0.5 size-3.5 shrink-0" />
-          <span className="line-clamp-1">
-            {order.saleOrder.deliveryAddress}
-          </span>
+        <div className="pointer-events-none min-w-0 pr-13">
+          <p className="truncate font-medium">
+            #{order.saleOrder.orderNumber} {order.saleOrder.customerName}
+          </p>
+          <p className="truncate text-sm text-muted-foreground">
+            {order.saleOrder.sellerName} ·{" "}
+            {logisticsTypeLabels[order.saleOrder.logisticsType]}
+          </p>
         </div>
-      ) : null}
 
-      <ul className="grid gap-0.5 text-sm">
-        {order.saleOrder.items.slice(0, 2).map((item) => (
-          <li key={item.id} className="truncate">
-            {item.quantity}x {item.description}
-            {item.isPromotional ? (
-              <span className="ml-1 font-medium text-primary">
-                Promocional
-              </span>
-            ) : null}
-          </li>
-        ))}
-        {order.saleOrder.items.length > 2 ? (
-          <li className="text-muted-foreground">
-            +{order.saleOrder.items.length - 2} itens
-          </li>
+        <div className="pointer-events-none flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+          <span
+            className={cn(
+              "rounded-md px-1.5 py-0.5 text-xs font-medium",
+              statusBadgeStyles[order.status],
+            )}
+          >
+            {assemblyStatusLabels[order.status]}
+          </span>
+          <span>{money(order.saleOrder.closedAmount)}</span>
+        </div>
+
+        {order.saleOrder.deliveryAddress ? (
+          <div className="pointer-events-none flex items-start gap-1 text-sm text-muted-foreground">
+            <MapPin className="mt-0.5 size-3.5 shrink-0" />
+            <span className="line-clamp-1">
+              {order.saleOrder.deliveryAddress}
+            </span>
+          </div>
         ) : null}
-      </ul>
-    </article>
+
+        <ul className="pointer-events-none grid gap-0.5 text-sm">
+          {order.saleOrder.items.slice(0, 2).map((item) => (
+            <li key={item.id} className="truncate">
+              {item.quantity}x {item.description}
+              {item.isPromotional ? (
+                <span className="ml-1 font-medium text-primary">
+                  Promocional
+                </span>
+              ) : null}
+            </li>
+          ))}
+          {order.saleOrder.items.length > 2 ? (
+            <li className="text-muted-foreground">
+              +{order.saleOrder.items.length - 2} itens
+            </li>
+          ) : null}
+        </ul>
+        <AssemblyOrderDialog
+          assembly={{
+            id: order.id,
+            status: order.status,
+            priority: order.priority,
+            scheduledDate: order.scheduledDate,
+            scheduleNotes: order.scheduleNotes,
+            saleOrder: {
+              orderNumber: order.saleOrder.orderNumber,
+              customerName: order.saleOrder.customerName,
+              sellerName: order.saleOrder.sellerName,
+              logisticsType: order.saleOrder.logisticsType,
+              productCategories: order.saleOrder.productCategories,
+              nfsNumber: order.saleOrder.nfsNumber,
+              deliveryAddress: order.saleOrder.deliveryAddress,
+              notes: order.saleOrder.notes,
+              items: order.saleOrder.items,
+            },
+          }}
+          readOnly
+        />
+      </article>
+    </Dialog>
   );
 }
