@@ -4,6 +4,7 @@ import { UserRole } from "@/generated/prisma/enums";
 import {
   ActionFieldError,
   ActionForm,
+  ActionFormError,
 } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -135,9 +136,11 @@ export default async function SalesPage({
           id="sale-order-form"
           key={formKey}
           action={saveSaleOrder}
+          errorToast={false}
           resetOnSuccess={!editingOrder}
           className={`grid gap-4 lg:grid-cols-12 ${formTextClass}`}
         >
+          <ActionFormError className="lg:col-span-12" />
           <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
           <SaleGeneralInfoCard
             sellers={sellers}
