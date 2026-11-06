@@ -162,7 +162,9 @@ function getDateTone(date: Date | null) {
 }
 
 function formatProductCategories(categories: ProductCategory[]) {
-  return categories.map((category) => productCategoryLabels[category]).join(", ");
+  return categories
+    .map((category) => productCategoryLabels[category])
+    .join(", ");
 }
 
 function AssemblyColumn({
@@ -234,7 +236,9 @@ function AssemblyColumn({
                   isOver && "border-primary bg-background/60 text-foreground",
                 )}
               >
-                {readOnly ? "Nenhuma ordem nesta etapa" : "Solte uma ordem aqui"}
+                {readOnly
+                  ? "Nenhuma ordem nesta etapa"
+                  : "Solte uma ordem aqui"}
               </div>
             ) : null}
           </div>
@@ -288,7 +292,8 @@ function DraggableAssemblyCard({
             <CardHeader className="grid-cols-[minmax(0,1fr)_auto] gap-2">
               <div className="min-w-0">
                 <CardTitle className="text-base!">
-                  #{assembly.saleOrder.orderNumber} {assembly.saleOrder.customerName}
+                  #{assembly.saleOrder.orderNumber}{" "}
+                  {assembly.saleOrder.customerName}
                 </CardTitle>
                 <CardDescription className="text-base!">
                   {assembly.saleOrder.sellerName} ·{" "}
@@ -313,13 +318,15 @@ function DraggableAssemblyCard({
                     dateTone.className,
                   )}
                 >
-                  {assembly.scheduledDate ? <CalendarDays className="size-3.5" /> : null}
+                  {assembly.scheduledDate ? (
+                    <CalendarDays className="size-3.5" />
+                  ) : null}
                   {assembly.scheduledDate
                     ? `${dateTone.label} · ${dateText}`
                     : dateTone.label}
                 </span>
               </div>
-              <p className="min-w-0 whitespace-normal break-words text-base text-muted-foreground">
+              <p className="min-w-0 whitespace-normal wrap-break-words text-base text-muted-foreground">
                 {formatProductCategories(assembly.saleOrder.productCategories)}
               </p>
               <ul className="grid min-w-0 gap-1 text-base">
@@ -336,7 +343,10 @@ function DraggableAssemblyCard({
                 ) : null}
               </ul>
               {assembly.saleOrder.notes ? (
-                <Badge variant="secondary" className="max-w-full truncate text-base">
+                <Badge
+                  variant="secondary"
+                  className="max-w-full truncate text-base"
+                >
                   {assembly.saleOrder.notes}
                 </Badge>
               ) : null}
@@ -363,7 +373,9 @@ export function AssemblyBoard({
   readOnly?: boolean;
 }) {
   const [orders, setOrders] = useState(initialOrders);
-  const [pendingOrderIds, setPendingOrderIds] = useState<Set<string>>(new Set());
+  const [pendingOrderIds, setPendingOrderIds] = useState<Set<string>>(
+    new Set(),
+  );
   const suppressNextDialogClick = useRef(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -417,7 +429,9 @@ export function AssemblyBoard({
     if (!result.ok) {
       setOrders((currentOrders) =>
         currentOrders.map((order) =>
-          order.id === orderId ? { ...order, status: previousOrder.status } : order,
+          order.id === orderId
+            ? { ...order, status: previousOrder.status }
+            : order,
         ),
       );
       toast.error(result.message);
