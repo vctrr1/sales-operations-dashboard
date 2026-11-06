@@ -53,9 +53,18 @@ export default async function AssemblyPage() {
     UserRole.OPERATION,
     UserRole.ADMIN,
   ]);
+  const now = new Date();
+  const deliveredOrderCutoff = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 3),
+  );
 
   const assemblyOrders = await prisma.assemblyOrder.findMany({
     where: {
+      OR: [
+        { status: { not: AssemblyStatus.DELIVERED } },
+        { scheduledDate: null },
+        { scheduledDate: { gte: deliveredOrderCutoff } },
+      ],
       saleOrder: {
         commercialStatus: "CLOSED",
       },
@@ -97,7 +106,8 @@ export default async function AssemblyPage() {
       { requestedAt: "asc" },
     ],
   });
-  const initialNotificationCursor = getInitialNotificationCursor(assemblyOrders);
+  const initialNotificationCursor =
+    getInitialNotificationCursor(assemblyOrders);
   const initialOrders = [...assemblyOrders].sort(compareAssemblyOrders);
   const boardKey = assemblyOrders
     .map((order) => `${order.id}:${order.updatedAt.getTime()}`)
@@ -106,7 +116,9 @@ export default async function AssemblyPage() {
   return (
     <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col overflow-hidden">
       {user.role === UserRole.OPERATION ? (
-        <ProductionNotificationWatcher initialCursor={initialNotificationCursor} />
+        <ProductionNotificationWatcher
+          initialCursor={initialNotificationCursor}
+        />
       ) : null}
       <AssemblyBoard
         key={boardKey}
