@@ -46,15 +46,27 @@ import { SalePaymentValuesSection } from "./components/sale-payment-values-secti
 import { ProductCategoryMultiSelect } from "./components/product-category-multi-select";
 import { Switch } from "@/components/ui/switch";
 import { DeleteSaleOrderButton } from "./components/delete-sale-order-button";
+import { SaleOrderItemsFields } from "./components/sale-order-items-fields";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const cardTitleClass = "text-lg";
 const formTextClass =
   "text-base [&_button[data-slot=select-trigger]]:text-base [&_input]:text-base [&_textarea]:text-base";
+const ORDERS_PER_PAGE = 15;
 
 type SearchParams = Promise<{
   month?: string;
   edit?: string;
   promotional?: string;
+  page?: string;
 }>;
 
 export default async function SalesPage({
@@ -66,21 +78,23 @@ export default async function SalesPage({
   const params = await searchParams;
   const month = parseMonth(params.month);
   const promotionalOnly = params.promotional === "1";
+  const requestedPage = Number(params.page ?? 1);
+  const requestedPageNumber =
+    Number.isSafeInteger(requestedPage) && requestedPage > 0
+      ? requestedPage
+      : 1;
+  const orderWhere = {
+    ...(promotionalOnly
+      ? { items: { some: { isPromotional: true } } }
+      : {}),
+    quoteDate: {
+      gte: month.start,
+      lt: month.end,
+    },
+  };
 
-  const [orders, editingOrder, sellers] = await Promise.all([
-    prisma.saleOrder.findMany({
-      where: {
-        ...(promotionalOnly
-          ? { items: { some: { isPromotional: true } } }
-          : {}),
-        quoteDate: {
-          gte: month.start,
-          lt: month.end,
-        },
-      },
-      include: { items: true, assemblyOrder: true },
-      orderBy: [{ quoteDate: "desc" }, { orderNumber: "desc" }],
-    }),
+  const [orderCount, editingOrder, sellers] = await Promise.all([
+    prisma.saleOrder.count({ where: orderWhere }),
     params.edit
       ? prisma.saleOrder.findUnique({
           where: { id: params.edit },
@@ -93,10 +107,35 @@ export default async function SalesPage({
       orderBy: { name: "asc" },
     }),
   ]);
-
-  const itemRows = Array.from({
-    length: Math.max(5, editingOrder?.items.length ?? 0),
+  const totalPages = Math.max(1, Math.ceil(orderCount / ORDERS_PER_PAGE));
+  const currentPage = Math.min(requestedPageNumber, totalPages);
+  const orders = await prisma.saleOrder.findMany({
+    where: orderWhere,
+    select: {
+      id: true,
+      orderNumber: true,
+      customerName: true,
+      sellerName: true,
+      commercialStatus: true,
+      quotedAmount: true,
+      closedAmount: true,
+      logisticsType: true,
+      nfsNumber: true,
+      quoteDate: true,
+    },
+    orderBy: [{ quoteDate: "desc" }, { orderNumber: "desc" }],
+    skip: (currentPage - 1) * ORDERS_PER_PAGE,
+    take: ORDERS_PER_PAGE,
   });
+  const paginationHref = (page: number) =>
+    `/vendas?month=${month.key}${promotionalOnly ? "&promotional=1" : ""}&page=${page}`;
+  const visiblePages = Array.from(
+    new Set(
+      [1, currentPage - 1, currentPage, currentPage + 1, totalPages].filter(
+        (page) => page >= 1 && page <= totalPages,
+      ),
+    ),
+  ).sort((a, b) => a - b);
 
   const formKey = editingOrder?.id ?? "new-order";
 
@@ -223,42 +262,7 @@ export default async function SalesPage({
                 <FieldLabel className="text-base text-muted-foreground">
                   Itens:
                 </FieldLabel>
-                <div className="grid gap-2">
-                  {itemRows.map((_, index) => {
-                    const item = editingOrder?.items[index];
-                    return (
-                      <div
-                        key={index}
-                        className="grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-2 md:grid-cols-[110px_minmax(0,1fr)_auto]"
-                      >
-                        <Input
-                          name="itemQuantity"
-                          type="number"
-                          min="1"
-                          defaultValue={
-                            item?.quantity ?? (index === 0 ? 1 : "")
-                          }
-                          aria-label={`Quantidade ${index + 1}`}
-                        />
-                        <Input
-                          name="itemDescription"
-                          defaultValue={item?.description ?? ""}
-                          aria-label={`Descrição ${index + 1}`}
-                        />
-                        <div className="flex items-center gap-2 whitespace-nowrap text-base text-muted-foreground">
-                          <Switch
-                            id={`itemPromotional-${index}`}
-                            name={`itemPromotional-${index}`}
-                            value="true"
-                            defaultChecked={item?.isPromotional ?? false}
-                            aria-label={`Item ${index + 1} promocional`}
-                          />
-                          Promocional
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <SaleOrderItemsFields items={editingOrder?.items ?? []} />
                 <ActionFieldError name="items" />
               </FieldGroup>
             </CardContent>
@@ -336,7 +340,7 @@ export default async function SalesPage({
           <div>
             <CardTitle className={cardTitleClass}>Ordens do mês</CardTitle>
             <CardDescription className="text-base">
-              {orders.length} registros
+              {orderCount} registros
               {promotionalOnly ? " promocionais" : ""}
             </CardDescription>
           </div>
@@ -361,6 +365,7 @@ export default async function SalesPage({
               />
               Itens promocionais
             </label>
+            <input type="hidden" name="page" value="1" />
             <Button
               type="submit"
               className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
@@ -412,7 +417,7 @@ export default async function SalesPage({
                         title="Editar ordem"
                       >
                         <Link
-                          href={`/vendas?month=${month.key}${promotionalOnly ? "&promotional=1" : ""}&edit=${order.id}`}
+                          href={`/vendas?month=${month.key}${promotionalOnly ? "&promotional=1" : ""}&page=${currentPage}&edit=${order.id}`}
                         >
                           <Edit />
                         </Link>
@@ -430,6 +435,55 @@ export default async function SalesPage({
               ))}
             </tbody>
           </table>
+          {totalPages > 1 ? (
+            <Pagination className="mt-4">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href={paginationHref(Math.max(1, currentPage - 1))}
+                    text="Anterior"
+                    aria-disabled={currentPage === 1}
+                    tabIndex={currentPage === 1 ? -1 : undefined}
+                    className={
+                      currentPage === 1
+                        ? "pointer-events-none text-base opacity-50"
+                        : "text-base"
+                    }
+                  />
+                </PaginationItem>
+                {visiblePages.map((page, index) => (
+                  <PaginationItem key={page}>
+                    {index > 0 && page - visiblePages[index - 1] > 1 ? (
+                      <PaginationEllipsis />
+                    ) : null}
+                    <PaginationLink
+                      href={paginationHref(page)}
+                      isActive={page === currentPage}
+                      aria-label={`Página ${page}`}
+                      className="text-base"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href={paginationHref(
+                      Math.min(totalPages, currentPage + 1),
+                    )}
+                    text="Próxima"
+                    aria-disabled={currentPage === totalPages}
+                    tabIndex={currentPage === totalPages ? -1 : undefined}
+                    className={
+                      currentPage === totalPages
+                        ? "pointer-events-none text-base opacity-50"
+                        : "text-base"
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
         </CardContent>
       </Card>
     </div>
