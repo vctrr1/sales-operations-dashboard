@@ -425,6 +425,7 @@ export function AssemblyBoard({
 
   return (
     <DndContext
+      id="assembly-board"
       sensors={sensors}
       onDragStart={() => {
         suppressNextDialogClick.current = true;
