@@ -131,9 +131,7 @@ export async function saveSaleOrder(formData: FormData) {
       productCategories.includes(ProductCategory.REFORMAS) &&
       !nfsNumber
     ) {
-      throw new ActionError("Informe o número da NFS para itens de reforma.", {
-        nfsNumber: "Informe o número da NFS para itens de reforma.",
-      });
+      throw new ActionError("Informe o número da NFS para itens de reforma.");
     }
 
     const paymentMethod =

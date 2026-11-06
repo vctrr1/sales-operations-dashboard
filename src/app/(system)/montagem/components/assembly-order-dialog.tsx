@@ -78,18 +78,23 @@ type AssemblyOrderDialogProps = {
       sellerName: string;
       logisticsType: LogisticsType;
       productCategories: ProductCategory[];
+      nfsNumber: string | null;
       deliveryAddress: string | null;
       notes: string | null;
       items: {
         id: string;
         quantity: number;
         description: string;
+        isPromotional: boolean;
       }[];
     };
   };
 };
 
-export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
+export function AssemblyOrderDialog({
+  assembly,
+  readOnly = false,
+}: AssemblyOrderDialogProps & { readOnly?: boolean }) {
   const dateText = displayDate(assembly.scheduledDate);
 
   return (
@@ -148,10 +153,19 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
               {assembly.saleOrder.items.map((item) => (
                 <li key={item.id}>
                   {item.quantity}x {item.description}
+                  {item.isPromotional ? " · Promocional" : ""}
                 </li>
               ))}
             </ul>
           </section>
+          {assembly.saleOrder.nfsNumber ? (
+            <section className="grid gap-1">
+              <h3 className="text-base font-medium">Número da NFS</h3>
+              <p className="rounded-lg border bg-muted/30 p-3 text-base">
+                {assembly.saleOrder.nfsNumber}
+              </p>
+            </section>
+          ) : null}
 
           <section className="grid gap-1">
             <h3 className="flex items-center gap-2 text-base font-medium">
@@ -175,46 +189,58 @@ export function AssemblyOrderDialog({ assembly }: AssemblyOrderDialogProps) {
             </section>
           ) : null}
 
-          <ActionForm
-            action={updateAssemblySchedule}
-            className="grid gap-3 rounded-lg border p-3"
-          >
-            <input type="hidden" name="id" value={assembly.id} />
-            <div className="flex flex-col gap-1">
-              <h3 className="flex items-center gap-2 text-base font-medium">
-                <PencilLine className="size-4 text-muted-foreground" />
-                Programação
-              </h3>
-              <Input
-                type="date"
-                name="scheduledDate"
-                defaultValue={dateInputValue(assembly.scheduledDate)}
-                className="text-base md:text-base"
-                aria-label="Data marcada"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <h3 className="flex items-center gap-2 text-base font-medium">
-                <MessageSquareText className="size-4 text-muted-foreground" />
-                Observações de montagem
-              </h3>
-              <textarea
-                name="scheduleNotes"
-                defaultValue={assembly.scheduleNotes ?? ""}
-                className={textareaClass}
-                aria-label="Prazo ou observação"
-                placeholder="Prazo ou observação da montagem"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
-              variant="outline"
+          {readOnly ? (
+            <section className="grid gap-3 rounded-lg border p-3">
+              <h3 className="text-base font-medium">Programação</h3>
+              <p>
+                Data marcada: {dateText}
+              </p>
+              <p>
+                Observações: {assembly.scheduleNotes ?? "Sem observações"}
+              </p>
+            </section>
+          ) : (
+            <ActionForm
+              action={updateAssemblySchedule}
+              className="grid gap-3 rounded-lg border p-3"
             >
-              <Save />
-              Salvar programação
-            </Button>
-          </ActionForm>
+              <input type="hidden" name="id" value={assembly.id} />
+              <div className="flex flex-col gap-1">
+                <h3 className="flex items-center gap-2 text-base font-medium">
+                  <PencilLine className="size-4 text-muted-foreground" />
+                  Programação
+                </h3>
+                <Input
+                  type="date"
+                  name="scheduledDate"
+                  defaultValue={dateInputValue(assembly.scheduledDate)}
+                  className="text-base md:text-base"
+                  aria-label="Data marcada"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <h3 className="flex items-center gap-2 text-base font-medium">
+                  <MessageSquareText className="size-4 text-muted-foreground" />
+                  Observações de montagem
+                </h3>
+                <textarea
+                  name="scheduleNotes"
+                  defaultValue={assembly.scheduleNotes ?? ""}
+                  className={textareaClass}
+                  aria-label="Prazo ou observação"
+                  placeholder="Prazo ou observação da montagem"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
+                variant="outline"
+              >
+                <Save />
+                Salvar programação
+              </Button>
+            </ActionForm>
+          )}
         </div>
       </ScrollArea>
     </DialogContent>

@@ -123,9 +123,15 @@ export type AssemblyBoardOrder = {
     sellerName: string;
     logisticsType: LogisticsType;
     productCategories: ProductCategory[];
+    nfsNumber: string | null;
     deliveryAddress: string | null;
     notes: string | null;
-    items: { id: string; quantity: number; description: string }[];
+    items: {
+      id: string;
+      quantity: number;
+      description: string;
+      isPromotional: boolean;
+    }[];
   };
 };
 
@@ -164,13 +170,18 @@ function AssemblyColumn({
   orders,
   pendingOrderIds,
   suppressDialogClick,
+  readOnly,
 }: {
   status: AssemblyStatus;
   orders: AssemblyBoardOrder[];
   pendingOrderIds: Set<string>;
   suppressDialogClick: (event: MouseEvent<HTMLDivElement>) => void;
+  readOnly: boolean;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { setNodeRef, isOver } = useDroppable({
+    id: status,
+    disabled: readOnly,
+  });
   const styles = statusStyles[status];
 
   return (
@@ -179,7 +190,9 @@ function AssemblyColumn({
       className={cn(
         "min-h-0 border ring-0 transition-shadow",
         styles.column,
-        isOver && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+        !readOnly &&
+          isOver &&
+          "ring-2 ring-primary ring-offset-2 ring-offset-background",
       )}
     >
       <CardHeader className="grid-cols-[1fr_auto] items-center">
@@ -207,6 +220,7 @@ function AssemblyColumn({
                 accentClassName={styles.cardAccent}
                 isPending={pendingOrderIds.has(assembly.id)}
                 suppressDialogClick={suppressDialogClick}
+                readOnly={readOnly}
               />
             ))}
 
@@ -217,7 +231,7 @@ function AssemblyColumn({
                   isOver && "border-primary bg-background/60 text-foreground",
                 )}
               >
-                Solte uma ordem aqui
+                {readOnly ? "Nenhuma ordem nesta etapa" : "Solte uma ordem aqui"}
               </div>
             ) : null}
           </div>
@@ -232,15 +246,17 @@ function DraggableAssemblyCard({
   accentClassName,
   isPending,
   suppressDialogClick,
+  readOnly,
 }: {
   assembly: AssemblyBoardOrder;
   accentClassName: string;
   isPending: boolean;
   suppressDialogClick: (event: MouseEvent<HTMLDivElement>) => void;
+  readOnly: boolean;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: assembly.id,
-    disabled: isPending,
+    disabled: isPending || readOnly,
   });
   const dateTone = getDateTone(assembly.scheduledDate);
   const dateText = displayDate(assembly.scheduledDate);
@@ -254,7 +270,7 @@ function DraggableAssemblyCard({
           {...attributes}
           {...listeners}
           className={cn(
-            "cursor-grab touch-none active:cursor-grabbing",
+            !readOnly && "cursor-grab touch-none active:cursor-grabbing",
             (isDragging || isPending) && "pointer-events-none opacity-50",
           )}
         >
@@ -306,6 +322,7 @@ function DraggableAssemblyCard({
                 {assembly.saleOrder.items.slice(0, 3).map((item) => (
                   <li key={item.id} className="line-clamp-1">
                     {item.quantity}x {item.description}
+                    {item.isPromotional ? " · Promocional" : ""}
                   </li>
                 ))}
                 {assembly.saleOrder.items.length > 3 ? (
@@ -319,17 +336,28 @@ function DraggableAssemblyCard({
                   {assembly.saleOrder.notes}
                 </Badge>
               ) : null}
+              {assembly.saleOrder.nfsNumber ? (
+                <Badge variant="outline" className="w-fit text-base">
+                  NFS {assembly.saleOrder.nfsNumber}
+                </Badge>
+              ) : null}
             </CardContent>
           </Card>
         </div>
       </DialogTrigger>
 
-      <AssemblyOrderDialog assembly={assembly} />
+      <AssemblyOrderDialog assembly={assembly} readOnly={readOnly} />
     </Dialog>
   );
 }
 
-export function AssemblyBoard({ initialOrders }: { initialOrders: AssemblyBoardOrder[] }) {
+export function AssemblyBoard({
+  initialOrders,
+  readOnly = false,
+}: {
+  initialOrders: AssemblyBoardOrder[];
+  readOnly?: boolean;
+}) {
   const [orders, setOrders] = useState(initialOrders);
   const [pendingOrderIds, setPendingOrderIds] = useState<Set<string>>(new Set());
   const suppressNextDialogClick = useRef(false);
@@ -354,6 +382,7 @@ export function AssemblyBoard({ initialOrders }: { initialOrders: AssemblyBoardO
 
   async function handleDragEnd(event: DragEndEvent) {
     clearDialogClickSuppression();
+    if (readOnly) return;
 
     const { active, over } = event;
     if (!over) return;
@@ -411,6 +440,7 @@ export function AssemblyBoard({ initialOrders }: { initialOrders: AssemblyBoardO
             orders={orders.filter((order) => order.status === status)}
             pendingOrderIds={pendingOrderIds}
             suppressDialogClick={suppressDialogClick}
+            readOnly={readOnly}
           />
         ))}
       </section>

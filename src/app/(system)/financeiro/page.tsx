@@ -148,7 +148,7 @@ export default async function FinancePage({
                 <th className="py-2 pr-3">Prioridade</th>
                 <th className="py-2 pr-3">Valor</th>
                 <th className="py-2 pr-3">Itens</th>
-                <th className="py-2 pr-3">Data</th>
+                <th className="py-2 pr-3">Programação</th>
               </tr>
             </thead>
             <tbody>
@@ -174,11 +174,25 @@ export default async function FinancePage({
                     {order.saleOrder.items.map((item) => (
                       <div key={item.id}>
                         {item.quantity}x {item.description}
+                        {item.isPromotional ? (
+                          <span className="ml-1 text-xs font-medium text-primary">
+                            Promocional
+                          </span>
+                        ) : null}
                       </div>
                     ))}
                   </td>
                   <td className="py-3 pr-3">
-                    {displayDate(order.scheduledDate ?? order.requestedAt)}
+                    {order.scheduledDate ? (
+                      displayDate(order.scheduledDate)
+                    ) : (
+                      <span>
+                        Sem data programada
+                        <span className="block text-sm text-muted-foreground">
+                          Solicitada em {displayDate(order.requestedAt)}
+                        </span>
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

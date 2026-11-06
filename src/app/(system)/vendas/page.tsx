@@ -4,7 +4,6 @@ import { UserRole } from "@/generated/prisma/enums";
 import {
   ActionFieldError,
   ActionForm,
-  ActionFormError,
 } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,25 +43,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { SaleGeneralInfoCard } from "./components/sale-general-info-card";
 import { SalePaymentValuesSection } from "./components/sale-payment-values-section";
 import { ProductCategoryMultiSelect } from "./components/product-category-multi-select";
+import { Switch } from "@/components/ui/switch";
+import { DeleteSaleOrderButton } from "./components/delete-sale-order-button";
 
 const cardTitleClass = "text-lg";
 const formTextClass =
   "text-base [&_button[data-slot=select-trigger]]:text-base [&_input]:text-base [&_textarea]:text-base";
 
-type SearchParams = Promise<{ month?: string; edit?: string }>;
+type SearchParams = Promise<{
+  month?: string;
+  edit?: string;
+  promotional?: string;
+}>;
 
 export default async function SalesPage({
   searchParams,
 }: {
   searchParams: SearchParams;
 }) {
-  await requireRole([UserRole.SALES, UserRole.ADMIN]);
+  const user = await requireRole([UserRole.SALES, UserRole.ADMIN]);
   const params = await searchParams;
   const month = parseMonth(params.month);
+  const promotionalOnly = params.promotional === "1";
 
   const [orders, editingOrder, sellers] = await Promise.all([
     prisma.saleOrder.findMany({
       where: {
+        ...(promotionalOnly
+          ? { items: { some: { isPromotional: true } } }
+          : {}),
         quoteDate: {
           gte: month.start,
           lt: month.end,
@@ -126,11 +135,9 @@ export default async function SalesPage({
           id="sale-order-form"
           key={formKey}
           action={saveSaleOrder}
-          errorToast={false}
           resetOnSuccess={!editingOrder}
           className={`grid gap-4 lg:grid-cols-12 ${formTextClass}`}
         >
-          <ActionFormError className="lg:col-span-12" />
           <input type="hidden" name="id" value={editingOrder?.id ?? ""} />
           <SaleGeneralInfoCard
             sellers={sellers}
@@ -145,7 +152,6 @@ export default async function SalesPage({
             discountPercent={editingOrder?.discountPercent?.toString() ?? ""}
             paymentMethod={editingOrder?.paymentMethod}
           />
-
           <Card className="min-w-0 lg:col-span-3">
             <CardHeader>
               <CardTitle className={cardTitleClass}>
@@ -159,6 +165,7 @@ export default async function SalesPage({
                 options={productCategoryOptions}
                 labels={productCategoryLabels}
                 defaultValues={editingOrder?.productCategories ?? []}
+                nfsNumber={editingOrder?.nfsNumber ?? ""}
               />
               <ActionFieldError name="productCategories" />
               <RadioGroup
@@ -219,7 +226,7 @@ export default async function SalesPage({
                     return (
                       <div
                         key={index}
-                        className="grid gap-2 md:grid-cols-[110px_1fr]"
+                        className="grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-2 md:grid-cols-[110px_minmax(0,1fr)_auto]"
                       >
                         <Input
                           name="itemQuantity"
@@ -235,6 +242,16 @@ export default async function SalesPage({
                           defaultValue={item?.description ?? ""}
                           aria-label={`Descrição ${index + 1}`}
                         />
+                        <div className="flex items-center gap-2 whitespace-nowrap text-base text-muted-foreground">
+                          <Switch
+                            id={`itemPromotional-${index}`}
+                            name={`itemPromotional-${index}`}
+                            value="true"
+                            defaultChecked={item?.isPromotional ?? false}
+                            aria-label={`Item ${index + 1} promocional`}
+                          />
+                          Promocional
+                        </div>
                       </div>
                     );
                   })}
@@ -317,6 +334,7 @@ export default async function SalesPage({
             <CardTitle className={cardTitleClass}>Ordens do mês</CardTitle>
             <CardDescription className="text-base">
               {orders.length} registros
+              {promotionalOnly ? " promocionais" : ""}
             </CardDescription>
           </div>
           <form className="flex flex-wrap items-center gap-2">
@@ -328,6 +346,18 @@ export default async function SalesPage({
               defaultValue={displayMonth(month.key)}
               className="w-37.5 text-base md:text-base"
             />
+            <label
+              htmlFor="promotional-filter"
+              className="flex items-center gap-2 whitespace-nowrap text-base"
+            >
+              <Switch
+                id="promotional-filter"
+                name="promotional"
+                value="1"
+                defaultChecked={promotionalOnly}
+              />
+              Itens promocionais
+            </label>
             <Button
               type="submit"
               className="text-base bg-primary/10 text-primary hover:bg-primary/20 border border-primary/50"
@@ -348,6 +378,7 @@ export default async function SalesPage({
                 <th className="py-2 pr-3">Orçado</th>
                 <th className="py-2 pr-3">Fechado</th>
                 <th className="py-2 pr-3">Logística</th>
+                <th className="py-2 pr-3">NFS</th>
                 <th className="py-2 pr-3">Data</th>
                 <th className="py-2 pr-3"></th>
               </tr>
@@ -366,21 +397,31 @@ export default async function SalesPage({
                   <td className="py-3 pr-3">
                     {logisticsTypeLabels[order.logisticsType]}
                   </td>
+                  <td className="py-3 pr-3">{order.nfsNumber ?? "—"}</td>
                   <td className="py-3 pr-3">{displayDate(order.quoteDate)}</td>
                   <td className="py-3 pr-3 text-right">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="text-base"
-                    >
-                      <Link
-                        href={`/vendas?month=${month.key}&edit=${order.id}`}
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="icon"
+                        aria-label={`Editar ordem ${order.orderNumber}`}
+                        title="Editar ordem"
                       >
-                        <Edit />
-                        Editar
-                      </Link>
-                    </Button>
+                        <Link
+                          href={`/vendas?month=${month.key}${promotionalOnly ? "&promotional=1" : ""}&edit=${order.id}`}
+                        >
+                          <Edit />
+                        </Link>
+                      </Button>
+                      {user.role === UserRole.ADMIN ? (
+                        <DeleteSaleOrderButton
+                          orderId={order.id}
+                          orderNumber={order.orderNumber}
+                          customerName={order.customerName}
+                        />
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               ))}

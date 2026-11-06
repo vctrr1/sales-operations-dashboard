@@ -48,7 +48,11 @@ function getInitialNotificationCursor(
 }
 
 export default async function AssemblyPage() {
-  const user = await requireRole([UserRole.OPERATION, UserRole.ADMIN]);
+  const user = await requireRole([
+    UserRole.SALES,
+    UserRole.OPERATION,
+    UserRole.ADMIN,
+  ]);
 
   const assemblyOrders = await prisma.assemblyOrder.findMany({
     where: {
@@ -72,6 +76,7 @@ export default async function AssemblyPage() {
           sellerName: true,
           logisticsType: true,
           productCategories: true,
+          nfsNumber: true,
           deliveryAddress: true,
           notes: true,
           items: {
@@ -79,6 +84,7 @@ export default async function AssemblyPage() {
               id: true,
               quantity: true,
               description: true,
+              isPromotional: true,
             },
           },
         },
@@ -102,7 +108,11 @@ export default async function AssemblyPage() {
       {user.role === UserRole.OPERATION ? (
         <ProductionNotificationWatcher initialCursor={initialNotificationCursor} />
       ) : null}
-      <AssemblyBoard key={boardKey} initialOrders={initialOrders} />
+      <AssemblyBoard
+        key={boardKey}
+        initialOrders={initialOrders}
+        readOnly={user.role === UserRole.SALES}
+      />
     </div>
   );
 }
