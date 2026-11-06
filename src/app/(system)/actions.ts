@@ -75,7 +75,11 @@ function parseItems(formData: FormData) {
       const rawQuantity = quantities[index];
       const quantity =
         typeof rawQuantity === "string" ? Number.parseInt(rawQuantity, 10) : 0;
-      return { quantity: Number.isFinite(quantity) ? quantity : 0, description: text };
+      return {
+        quantity: Number.isFinite(quantity) ? quantity : 0,
+        description: text,
+        isPromotional: formData.get(`itemPromotional-${index}`) === "true",
+      };
     })
     .filter((item) => item.description && item.quantity > 0);
 
@@ -121,6 +125,17 @@ export async function saveSaleOrder(formData: FormData) {
     const closedAt = parseDateField(formData.get("closedAt"));
     const items = parseItems(formData);
     const productCategories = parseProductCategories(formData);
+    const nfsNumber = parseOptionalText(formData.get("nfsNumber"));
+
+    if (
+      productCategories.includes(ProductCategory.REFORMAS) &&
+      !nfsNumber
+    ) {
+      throw new ActionError("Informe o número da NFS para itens de reforma.", {
+        nfsNumber: "Informe o número da NFS para itens de reforma.",
+      });
+    }
+
     const paymentMethod =
       commercialStatus === CommercialStatus.CLOSED
         ? enumValue(PaymentMethod, formData.get("paymentMethod"), PaymentMethod.CARD)
@@ -147,6 +162,9 @@ export async function saveSaleOrder(formData: FormData) {
           ? parseMoneyField(formData.get("discountPercent"))
           : null,
       paymentMethod,
+      nfsNumber: productCategories.includes(ProductCategory.REFORMAS)
+        ? nfsNumber
+        : null,
       productCategories,
       logisticsType: enumValue(LogisticsType, formData.get("logisticsType"), LogisticsType.DELIVERY),
       deliveryAddress: parseOptionalText(formData.get("deliveryAddress")),
@@ -226,6 +244,26 @@ export async function saveSaleOrder(formData: FormData) {
       message: id ? "Ordem atualizada." : "Ordem criada.",
       redirectTo: "/vendas",
     };
+  });
+}
+
+export async function deleteSaleOrder(formData: FormData) {
+  return safeAction(async () => {
+    await requireActionRole([UserRole.ADMIN]);
+
+    const id = parseActionRequiredText(formData.get("id"), "ordem");
+
+    await prisma.saleOrder.delete({
+      where: { id },
+    });
+
+    revalidatePath("/vendas");
+    revalidatePath("/vendas/dashboard");
+    revalidatePath("/montagem");
+    revalidatePath("/calendario");
+    revalidatePath("/financeiro");
+
+    return { ok: true, message: "Ordem apagada." };
   });
 }
 

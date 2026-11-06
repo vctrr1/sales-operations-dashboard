@@ -56,7 +56,11 @@ export function canAccessSales(role: UserRoleType) {
 }
 
 export function canAccessOperations(role: UserRoleType) {
-  return role === UserRole.OPERATION || role === UserRole.ADMIN;
+  return (
+    role === UserRole.OPERATION ||
+    role === UserRole.SALES ||
+    role === UserRole.ADMIN
+  );
 }
 
 export function canAccessAdmin(role: UserRoleType) {

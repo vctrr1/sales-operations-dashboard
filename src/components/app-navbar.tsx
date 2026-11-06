@@ -92,10 +92,10 @@ export function AppNavbar({ user }: { user: AppUser }) {
             <CalendarDays className="size-5" />
             Calendário
           </AppNavLink>
-          {canAccessOperations(user.role) ? (
+          {canAccessOperations(user.role) || canAccessSales(user.role) ? (
             <AppNavLink href="/montagem">
               <Drill className="size-5" />
-              Produção
+              {user.role === UserRole.SALES ? "Montagem" : "Produção"}
             </AppNavLink>
           ) : null}
           {canAccessAdmin(user.role) ? (
