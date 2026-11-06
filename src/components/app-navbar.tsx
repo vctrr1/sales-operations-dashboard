@@ -95,7 +95,7 @@ export function AppNavbar({ user }: { user: AppUser }) {
           {canAccessOperations(user.role) || canAccessSales(user.role) ? (
             <AppNavLink href="/montagem">
               <Drill className="size-5" />
-              {user.role === UserRole.SALES ? "Montagem" : "Produção"}
+              {"Produção"}
             </AppNavLink>
           ) : null}
           {canAccessAdmin(user.role) ? (
