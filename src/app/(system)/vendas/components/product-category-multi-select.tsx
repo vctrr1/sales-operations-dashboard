@@ -73,7 +73,7 @@ export function ProductCategoryMultiSelect<T extends string>({
           </MultiSelectContent>
         </MultiSelect>
       </Field>
-      <FormField label="Número da NFS (obrigatório para Reformas):">
+      <FormField label="Número da NFS: (obrigatório para Reformas)">
         <Input
           name="nfsNumber"
           defaultValue={nfsNumber}
