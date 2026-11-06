@@ -28,11 +28,14 @@ function addUtcDays(date: Date, amount: number) {
   );
 }
 
-function buildCalendarDays(monthStart: Date) {
-  const gridStart = addUtcDays(monthStart, -monthStart.getUTCDay());
+function buildCalendarDays(startDate: Date, viewMode: "month" | "week") {
+  const gridStart =
+    viewMode === "week"
+      ? startDate
+      : addUtcDays(startDate, -startDate.getUTCDay());
   const todayKey = utcDateKey(new Date());
 
-  return Array.from({ length: 42 }, (_, index) => {
+  return Array.from({ length: viewMode === "week" ? 7 : 42 }, (_, index) => {
     const date = addUtcDays(gridStart, index);
     const key = utcDateKey(date);
 
@@ -40,29 +43,39 @@ function buildCalendarDays(monthStart: Date) {
       date,
       key,
       dayNumber: date.getUTCDate(),
-      inCurrentMonth: date.getUTCMonth() === monthStart.getUTCMonth(),
+      inCurrentMonth:
+        viewMode === "week" ||
+        date.getUTCMonth() === startDate.getUTCMonth(),
       isToday: key === todayKey,
     } satisfies CalendarDay;
   });
 }
 
-export function calendarGridRange(monthStart: Date) {
-  const gridStart = addUtcDays(monthStart, -monthStart.getUTCDay());
-  const gridEnd = addUtcDays(gridStart, 42);
+export function calendarGridRange(
+  startDate: Date,
+  viewMode: "month" | "week" = "month",
+) {
+  const gridStart =
+    viewMode === "week"
+      ? startDate
+      : addUtcDays(startDate, -startDate.getUTCDay());
+  const gridEnd = addUtcDays(gridStart, viewMode === "week" ? 7 : 42);
 
   return { gridStart, gridEnd };
 }
 
 export function CalendarMonthGrid({
-  monthStart,
+  startDate,
+  viewMode = "month",
   orders,
   events,
 }: {
-  monthStart: Date;
+  startDate: Date;
+  viewMode?: "month" | "week";
   orders: CalendarOrder[];
   events: CalendarEvent[];
 }) {
-  const days = buildCalendarDays(monthStart);
+  const days = buildCalendarDays(startDate, viewMode);
   const ordersByDate = new Map<string, CalendarOrder[]>();
   const eventsByDate = new Map<string, CalendarEvent[]>();
 
@@ -83,8 +96,18 @@ export function CalendarMonthGrid({
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border bg-card text-card-foreground">
-      <div className="grid grid-cols-7 border-b bg-muted/50">
+    <section
+      className={cn(
+        "overflow-hidden rounded-xl border bg-card text-card-foreground",
+        viewMode === "week" && "flex min-h-0 flex-1 flex-col",
+      )}
+    >
+      <div
+        className={cn(
+          "grid grid-cols-7 border-b bg-muted/50",
+          viewMode === "week" && "hidden",
+        )}
+      >
         {weekDays.map((day) => (
           <div
             key={day}
@@ -95,7 +118,14 @@ export function CalendarMonthGrid({
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-7">
+      <div
+        className={cn(
+          "grid min-h-0",
+          viewMode === "week"
+            ? "flex-1 grid-cols-7 grid-rows-1"
+            : "grid-cols-1 md:grid-cols-7",
+        )}
+      >
         {days.map((day) => {
           const dateOrders = ordersByDate.get(day.key) ?? [];
           const dateEvents = eventsByDate.get(day.key) ?? [];
@@ -105,7 +135,10 @@ export function CalendarMonthGrid({
             <div
               key={day.key}
               className={cn(
-                "flex min-h-42 flex-col border-b p-2 md:h-60 md:border-r",
+                "flex min-w-0 flex-col border-b p-2 md:border-r",
+                viewMode === "week"
+                  ? "h-full min-h-0"
+                  : "min-h-42 md:h-60",
                 !day.inCurrentMonth && "bg-muted/60 text-muted-foreground",
                 day.isToday && "bg-primary/10",
               )}
@@ -113,10 +146,18 @@ export function CalendarMonthGrid({
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span
                   className={cn(
-                    "inline-flex size-7 items-center justify-center rounded-full text-base font-medium",
+                    "inline-flex items-center justify-center rounded-full text-base font-medium",
+                    viewMode === "week"
+                      ? "h-auto w-auto gap-2 px-2 py-1"
+                      : "size-7",
                     day.isToday && "bg-primary text-primary-foreground",
                   )}
                 >
+                  {viewMode === "week" ? (
+                    <span>
+                      {weekDays[day.date.getUTCDay()]}
+                    </span>
+                  ) : null}
                   {day.dayNumber}
                 </span>
                 {dateItemsCount > 0 ? (

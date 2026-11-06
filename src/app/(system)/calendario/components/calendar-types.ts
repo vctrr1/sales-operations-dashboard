@@ -25,6 +25,7 @@ export type CalendarOrder = {
       id: string;
       quantity: number;
       description: string;
+      isPromotional: boolean;
     }[];
   };
 };

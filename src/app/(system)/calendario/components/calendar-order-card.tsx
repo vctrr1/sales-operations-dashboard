@@ -86,6 +86,11 @@ export function CalendarOrderCard({ order }: { order: CalendarOrder }) {
         {order.saleOrder.items.slice(0, 2).map((item) => (
           <li key={item.id} className="truncate">
             {item.quantity}x {item.description}
+            {item.isPromotional ? (
+              <span className="ml-1 font-medium text-primary">
+                Promocional
+              </span>
+            ) : null}
           </li>
         ))}
         {order.saleOrder.items.length > 2 ? (
