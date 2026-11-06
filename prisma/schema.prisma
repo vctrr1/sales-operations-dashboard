@@ -156,6 +156,7 @@ model SaleOrder {
   closedAmount       Decimal?           @db.Decimal(12, 2)
   discountPercent    Decimal?           @db.Decimal(5, 2)
   paymentMethod      PaymentMethod?
+  nfsNumber          String?
   productCategories  ProductCategory[]  @default([])
   logisticsType      LogisticsType
   deliveryAddress    String?
@@ -178,11 +179,12 @@ model SaleOrder {
 }
 
 model SaleOrderItem {
-  id          String    @id @default(cuid())
-  quantity    Int
-  description String
-  saleOrderId String
-  saleOrder   SaleOrder @relation(fields: [saleOrderId], references: [id], onDelete: Cascade)
+  id            String    @id @default(cuid())
+  quantity      Int
+  description   String
+  isPromotional Boolean   @default(false)
+  saleOrderId   String
+  saleOrder     SaleOrder @relation(fields: [saleOrderId], references: [id], onDelete: Cascade)
 
   @@index([saleOrderId])
 }
