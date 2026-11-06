@@ -95,6 +95,34 @@ function SaleValuesCard(
       return;
     }
 
+    if (!discountValue.trim() && closedValue.trim()) {
+      const closed = parseBrazilianNumber(closedValue);
+
+      if (!Number.isFinite(closed) || closed < 0 || closed > quoted) {
+        toast.error(
+          "Informe um valor fechado válido, entre zero e o valor orçado.",
+        );
+        return;
+      }
+
+      if (quoted === 0) {
+        toast.error("O valor orçado deve ser maior que zero.");
+        return;
+      }
+
+      const calculatedDiscount = ((quoted - closed) / quoted) * 100;
+      setQuotedValue(formatBrazilianMoneyValue(quoted));
+      setClosedValue(formatBrazilianMoneyValue(closed));
+      setDiscountValue(
+        calculatedDiscount.toLocaleString("pt-BR", {
+          maximumFractionDigits: 2,
+        }),
+      );
+      setLastCalculatedClosedValue(null);
+      toast.success("Percentual de desconto calculado.");
+      return;
+    }
+
     if (!Number.isFinite(discount) || discount < 0) {
       toast.error("Informe um desconto válido.");
       return;
