@@ -47,6 +47,7 @@ import { ProductCategoryMultiSelect } from "./components/product-category-multi-
 import { Switch } from "@/components/ui/switch";
 import { DeleteSaleOrderButton } from "./components/delete-sale-order-button";
 import { SaleOrderItemsFields } from "./components/sale-order-items-fields";
+import { SaleOrderDetailsButton } from "./components/sale-order-details-button";
 import {
   Pagination,
   PaginationContent,
@@ -122,6 +123,26 @@ export default async function SalesPage({
       logisticsType: true,
       nfsNumber: true,
       quoteDate: true,
+      productCategories: true,
+      deliveryAddress: true,
+      notes: true,
+      items: {
+        select: {
+          id: true,
+          quantity: true,
+          description: true,
+          isPromotional: true,
+        },
+      },
+      assemblyOrder: {
+        select: {
+          id: true,
+          status: true,
+          priority: true,
+          scheduledDate: true,
+          scheduleNotes: true,
+        },
+      },
     },
     orderBy: [{ quoteDate: "desc" }, { orderNumber: "desc" }],
     skip: (currentPage - 1) * ORDERS_PER_PAGE,
@@ -409,6 +430,24 @@ export default async function SalesPage({
                   <td className="py-3 pr-3">{displayDate(order.quoteDate)}</td>
                   <td className="py-3 pr-3 text-right">
                     <div className="flex justify-end gap-1">
+                      {order.assemblyOrder ? (
+                        <SaleOrderDetailsButton
+                          assembly={{
+                            ...order.assemblyOrder,
+                            saleOrder: {
+                              orderNumber: order.orderNumber,
+                              customerName: order.customerName,
+                              sellerName: order.sellerName,
+                              logisticsType: order.logisticsType,
+                              productCategories: order.productCategories,
+                              nfsNumber: order.nfsNumber,
+                              deliveryAddress: order.deliveryAddress,
+                              notes: order.notes,
+                              items: order.items,
+                            },
+                          }}
+                        />
+                      ) : null}
                       <Button
                         asChild
                         variant="outline"

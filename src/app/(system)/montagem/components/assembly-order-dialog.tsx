@@ -65,36 +65,37 @@ function formatProductCategories(categories: ProductCategory[]) {
     .join(", ");
 }
 
-type AssemblyOrderDialogProps = {
-  assembly: {
-    id: string;
-    status: AssemblyStatus;
-    priority: Priority;
-    scheduledDate: Date | null;
-    scheduleNotes: string | null;
-    saleOrder: {
-      orderNumber: number;
-      customerName: string;
-      sellerName: string;
-      logisticsType: LogisticsType;
-      productCategories: ProductCategory[];
-      nfsNumber: string | null;
-      deliveryAddress: string | null;
-      notes: string | null;
-      items: {
-        id: string;
-        quantity: number;
-        description: string;
-        isPromotional: boolean;
-      }[];
-    };
+export type AssemblyOrderDialogData = {
+  id: string;
+  status: AssemblyStatus;
+  priority: Priority;
+  scheduledDate: Date | null;
+  scheduleNotes: string | null;
+  saleOrder: {
+    orderNumber: number;
+    customerName: string;
+    sellerName: string;
+    logisticsType: LogisticsType;
+    productCategories: ProductCategory[];
+    nfsNumber: string | null;
+    deliveryAddress: string | null;
+    notes: string | null;
+    items: {
+      id: string;
+      quantity: number;
+      description: string;
+      isPromotional: boolean;
+    }[];
   };
 };
 
 export function AssemblyOrderDialog({
   assembly,
   readOnly = false,
-}: AssemblyOrderDialogProps & { readOnly?: boolean }) {
+}: {
+  assembly: AssemblyOrderDialogData;
+  readOnly?: boolean;
+}) {
   const dateText = displayDate(assembly.scheduledDate);
 
   return (
