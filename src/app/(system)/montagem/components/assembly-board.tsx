@@ -212,7 +212,10 @@ function AssemblyColumn({
 
       <CardContent className="min-h-0 flex-1 px-2">
         <ScrollArea className="h-full pr-2">
-          <div ref={setNodeRef} className="grid min-h-24 gap-3 rounded-lg">
+          <div
+            ref={setNodeRef}
+            className="grid min-h-24 min-w-0 gap-3 rounded-lg"
+          >
             {orders.map((assembly) => (
               <DraggableAssemblyCard
                 key={assembly.id}
@@ -270,6 +273,7 @@ function DraggableAssemblyCard({
           {...attributes}
           {...listeners}
           className={cn(
+            "min-w-0",
             !readOnly && "cursor-grab touch-none active:cursor-grabbing",
             (isDragging || isPending) && "pointer-events-none opacity-50",
           )}
@@ -277,11 +281,11 @@ function DraggableAssemblyCard({
           <Card
             size="sm"
             className={cn(
-              "border border-l-4 border-border bg-background/80 text-left shadow-sm ring-0 transition-colors hover:bg-background",
+              "min-w-0 border border-l-4 border-border bg-background/80 text-left shadow-sm ring-0 transition-colors hover:bg-background",
               accentClassName,
             )}
           >
-            <CardHeader className="grid-cols-[1fr_auto] gap-2">
+            <CardHeader className="grid-cols-[minmax(0,1fr)_auto] gap-2">
               <div className="min-w-0">
                 <CardTitle className="text-base!">
                   #{assembly.saleOrder.orderNumber} {assembly.saleOrder.customerName}
@@ -293,7 +297,7 @@ function DraggableAssemblyCard({
               </div>
               <span
                 className={cn(
-                  "rounded-md border px-2 py-1 text-base font-medium",
+                  "shrink-0 whitespace-nowrap rounded-md border px-2 py-1 text-base font-medium",
                   priorityStyles[assembly.priority],
                 )}
               >
@@ -301,7 +305,7 @@ function DraggableAssemblyCard({
               </span>
             </CardHeader>
 
-            <CardContent className="grid gap-3">
+            <CardContent className="grid min-w-0 gap-3">
               <div className="flex flex-wrap items-center gap-2 text-base text-muted-foreground">
                 <span
                   className={cn(
@@ -315,10 +319,10 @@ function DraggableAssemblyCard({
                     : dateTone.label}
                 </span>
               </div>
-              <p className="text-base text-muted-foreground">
+              <p className="min-w-0 whitespace-normal break-words text-base text-muted-foreground">
                 {formatProductCategories(assembly.saleOrder.productCategories)}
               </p>
-              <ul className="grid gap-1 text-base">
+              <ul className="grid min-w-0 gap-1 text-base">
                 {assembly.saleOrder.items.slice(0, 3).map((item) => (
                   <li key={item.id} className="line-clamp-1">
                     {item.quantity}x {item.description}
